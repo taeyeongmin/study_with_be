@@ -1,15 +1,11 @@
 spring:
   application:
     name: study_with_be
-  h2:
-    console:
-      enabled: true
-      path: /h2
   datasource:
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:test
-    username: sa
-    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/study_with?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: root
+    password: 1234
     hikari:
       minimum-idle: 10
       maximum-pool-size: 10
@@ -18,7 +14,7 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
+        dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
         show_sql: true
   messages:
@@ -29,4 +25,3 @@ logging:
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
     org.hibernate.tool.hbm2ddl: debug
-
