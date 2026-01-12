@@ -1,6 +1,5 @@
 package com.ty.study_with_be.member.service;
 
-import com.ty.study_with_be.member.presentation.req.SignupReq;
 import com.ty.study_with_be.member.presentation.res.MemberInfoRes;
 import com.ty.study_with_be.member.domain.model.Member;
 import com.ty.study_with_be.member.domain.model.AuthType;

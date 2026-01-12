@@ -2,7 +2,6 @@ package com.ty.study_with_be.global.security.handler;
 
 import com.ty.study_with_be.member.domain.model.Member;
 import com.ty.study_with_be.member.domain.model.AuthType;
-import com.ty.study_with_be.member.presentation.req.SignupReq;
 import com.ty.study_with_be.member.service.MemberService;
 import com.ty.study_with_be.global.security.token.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
@@ -64,7 +63,6 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             signupReq.setAuthType(AuthType.KAKAO);
             signupReq.setProviderUserId(providerUserId);
             signupReq.setNickname(nickname);
-            signupReq.setEmail(email);
             memberService.register(signupReq);
         }
 

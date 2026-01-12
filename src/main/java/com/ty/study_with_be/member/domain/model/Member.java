@@ -1,6 +1,5 @@
 package com.ty.study_with_be.member.domain.model;
 
-import com.ty.study_with_be.member.presentation.req.SignupReq;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -54,7 +53,7 @@ public class Member {
        LOCAL 로그인 전용
        ======================= */
     @Column(length = 50)
-    private String username;
+    private String loginId;
 
     /* =======================
        회원 프로필
@@ -82,10 +81,10 @@ public class Member {
         Member member = new Member();
         member.authType = AuthType.LOCAL;
         member.providerUserId = signupReq.getLoginId();
-        member.username = signupReq.getName();
+        member.loginId = signupReq.getLoginId();
         member.password = signupReq.getPassword();
         member.nickname = signupReq.getNickname();
-        member.email = signupReq.getEmail();
+        member.email = signupReq.getLoginId();
         return member;
     }
 
@@ -103,7 +102,6 @@ public class Member {
         member.authType = signupReq.getAuthType();
         member.providerUserId = signupReq.getProviderUserId();
         member.nickname = signupReq.getNickname();
-        member.email = signupReq.getEmail();
         return member;
     }
 
@@ -116,8 +114,8 @@ public class Member {
     void validateLoginMethod() {
 
         if (authType == AuthType.LOCAL) {
-            if (username == null || password == null) {
-                throw new IllegalStateException("LOCAL 로그인은 username/password가 필수입니다.");
+            if (loginId == null || password == null) {
+                throw new IllegalStateException("LOCAL 로그인은 email/password가 필수입니다.");
             }
         } else {
             if (password != null) {
