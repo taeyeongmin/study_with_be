@@ -1,6 +1,6 @@
 package com.ty.study_with_be.auth.controller;
 
-import com.ty.study_with_be.security.handler.CookieUtils;
+import com.ty.study_with_be.global.security.handler.CookieUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

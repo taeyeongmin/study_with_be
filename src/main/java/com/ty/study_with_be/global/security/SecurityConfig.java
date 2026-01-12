@@ -1,8 +1,7 @@
-package com.ty.study_with_be.security;
+package com.ty.study_with_be.global.security;
 
-import com.ty.study_with_be.security.filter.JwtAuthenticationFilter;
-import com.ty.study_with_be.security.handler.OAuth2LoginSuccessHandler;
-import com.ty.study_with_be.security.token.JwtTokenProvider;
+import com.ty.study_with_be.global.security.handler.OAuth2LoginSuccessHandler;
+import com.ty.study_with_be.global.security.token.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

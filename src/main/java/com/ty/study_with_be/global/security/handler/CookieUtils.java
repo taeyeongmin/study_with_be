@@ -1,4 +1,4 @@
-package com.ty.study_with_be.security.handler;
+package com.ty.study_with_be.global.security.handler;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,9 +1,9 @@
 package com.ty.study_with_be.study_group.domain.model;
 
-import jakarta.persistence.*;
-import lombok.AccessLevel;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.DayOfWeek;

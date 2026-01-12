@@ -1,4 +1,4 @@
-package com.ty.study_with_be.security.token;
+package com.ty.study_with_be.global.security.token;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;

@@ -1,7 +1,7 @@
-package com.ty.study_with_be.security.filter;
+package com.ty.study_with_be.global.security;
 
-import com.ty.study_with_be.security.handler.CookieUtils;
-import com.ty.study_with_be.security.token.JwtTokenProvider;
+import com.ty.study_with_be.global.security.handler.CookieUtils;
+import com.ty.study_with_be.global.security.token.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
