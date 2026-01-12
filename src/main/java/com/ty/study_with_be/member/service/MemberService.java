@@ -1,16 +1,15 @@
 package com.ty.study_with_be.member.service;
 
-import com.ty.study_with_be.member.dto.req.SignupReq;
-import com.ty.study_with_be.member.dto.res.MemberInfoRes;
-import com.ty.study_with_be.member.entity.Member;
-import com.ty.study_with_be.member.enums.AuthType;
+import com.ty.study_with_be.member.presentation.req.SignupReq;
+import com.ty.study_with_be.member.presentation.res.MemberInfoRes;
+import com.ty.study_with_be.member.domain.model.Member;
+import com.ty.study_with_be.member.domain.model.AuthType;
 import com.ty.study_with_be.member.repository.MemberRepository;
 import com.ty.study_with_be.member.service.signup.SignupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Service

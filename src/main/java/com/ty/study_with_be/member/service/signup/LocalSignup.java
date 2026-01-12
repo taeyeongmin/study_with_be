@@ -1,7 +1,7 @@
 package com.ty.study_with_be.member.service.signup;
 
-import com.ty.study_with_be.member.dto.req.SignupReq;
-import com.ty.study_with_be.member.entity.Member;
+import com.ty.study_with_be.member.presentation.req.SignupReq;
+import com.ty.study_with_be.member.domain.model.Member;
 import org.springframework.stereotype.Service;
 
 @Service("LOCAL")

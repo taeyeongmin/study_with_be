@@ -1,10 +1,8 @@
-package com.ty.study_with_be.member.controller;
+package com.ty.study_with_be.member.presentation;
 
-import com.ty.study_with_be.member.dto.req.SignupReq;
-import com.ty.study_with_be.member.dto.res.MemberInfoRes;
+import com.ty.study_with_be.member.presentation.req.SignupReq;
+import com.ty.study_with_be.member.presentation.res.MemberInfoRes;
 import com.ty.study_with_be.member.service.MemberService;
-import com.ty.study_with_be.security.handler.CookieUtils;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

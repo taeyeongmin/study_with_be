@@ -1,8 +1,8 @@
 package com.ty.study_with_be.security.handler;
 
-import com.ty.study_with_be.member.entity.Member;
-import com.ty.study_with_be.member.enums.AuthType;
-import com.ty.study_with_be.member.dto.req.SignupReq;
+import com.ty.study_with_be.member.domain.model.Member;
+import com.ty.study_with_be.member.domain.model.AuthType;
+import com.ty.study_with_be.member.presentation.req.SignupReq;
 import com.ty.study_with_be.member.service.MemberService;
 import com.ty.study_with_be.security.token.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletRequest;

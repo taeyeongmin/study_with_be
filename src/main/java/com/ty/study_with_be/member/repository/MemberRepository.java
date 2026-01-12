@@ -1,7 +1,7 @@
 package com.ty.study_with_be.member.repository;
 
-import com.ty.study_with_be.member.entity.Member;
-import com.ty.study_with_be.member.enums.AuthType;
+import com.ty.study_with_be.member.domain.model.Member;
+import com.ty.study_with_be.member.domain.model.AuthType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

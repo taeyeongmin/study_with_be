@@ -1,4 +1,4 @@
-package com.ty.study_with_be.member.dto.res;
+package com.ty.study_with_be.member.presentation.res;
 
 public record MemberInfoRes(
         Long memberId,

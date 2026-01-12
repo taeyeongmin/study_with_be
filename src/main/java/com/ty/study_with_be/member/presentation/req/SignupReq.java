@@ -1,6 +1,6 @@
-package com.ty.study_with_be.member.dto.req;
+package com.ty.study_with_be.member.presentation.req;
 
-import com.ty.study_with_be.member.enums.AuthType;
+import com.ty.study_with_be.member.domain.model.AuthType;
 import lombok.Data;
 
 @Data
