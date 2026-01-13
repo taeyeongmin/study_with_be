@@ -1,5 +1,6 @@
 package com.ty.study_with_be.member.service.signup;
 
+import com.ty.study_with_be.auth.presentation.req.SignupReq;
 import com.ty.study_with_be.member.domain.model.Member;
 import org.springframework.stereotype.Service;
 

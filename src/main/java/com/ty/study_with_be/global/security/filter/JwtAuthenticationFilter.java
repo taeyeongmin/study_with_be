@@ -1,4 +1,4 @@
-package com.ty.study_with_be.global.security;
+package com.ty.study_with_be.global.security.filter;
 
 import com.ty.study_with_be.global.security.handler.CookieUtils;
 import com.ty.study_with_be.global.security.token.JwtTokenProvider;
@@ -12,6 +12,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * 매 요청마다 토큰 값 검증하는 필터
+ */
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String ACCESS_TOKEN_COOKIE = "ACCESS_TOKEN";

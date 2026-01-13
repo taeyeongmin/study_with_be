@@ -19,8 +19,8 @@ public class AuthController {
 
     private final SignupUseCase signupUseCase;
 
-    @PostMapping("/signup")
-    public ResponseEntity<String> registerMember(@Valid @RequestBody SignupReq signupReq) {
+    @PostMapping("/signup_local")
+    public ResponseEntity<Object> registerMember(@Valid @RequestBody SignupReq signupReq) {
         signupUseCase.register(signupReq);
         return ResponseEntity.ok().build();
     }

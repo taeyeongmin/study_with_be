@@ -1,15 +1,24 @@
 package com.ty.study_with_be.global.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ty.study_with_be.global.security.filter.JwtAuthenticationFilter;
+import com.ty.study_with_be.global.security.filter.JwtLoginFilter;
+import com.ty.study_with_be.global.security.handler.LoginFailureHandler;
+import com.ty.study_with_be.global.security.handler.LoginSuccessHandler;
 import com.ty.study_with_be.global.security.handler.OAuth2LoginSuccessHandler;
 import com.ty.study_with_be.global.security.token.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.NullSecurityContextRepository;
@@ -21,9 +30,18 @@ public class SecurityConfig {
 
     private final OAuth2LoginSuccessHandler successHandler;
     private final JwtTokenProvider jwtTokenProvider;
+    private final ObjectMapper objectMapper;
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+
+        JwtLoginFilter jwtLoginFilter = new JwtLoginFilter(authenticationManager, objectMapper);
+        jwtLoginFilter.setFilterProcessesUrl("/api/auth/login");
+        jwtLoginFilter.setAuthenticationSuccessHandler(new LoginSuccessHandler(jwtTokenProvider, objectMapper));
+        jwtLoginFilter.setAuthenticationFailureHandler(new LoginFailureHandler(objectMapper));
+
+        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenProvider);
+
         http
                 // CORS는 전역 설정값을 그대로 사용.
                 .cors(Customizer.withDefaults())
@@ -56,5 +74,16 @@ public class SecurityConfig {
         http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }

@@ -1,9 +1,10 @@
 package com.ty.study_with_be.global.security.handler;
 
-import com.ty.study_with_be.member.domain.model.Member;
-import com.ty.study_with_be.member.domain.model.AuthType;
-import com.ty.study_with_be.member.service.MemberService;
+import com.ty.study_with_be.auth.presentation.req.SignupReq;
 import com.ty.study_with_be.global.security.token.JwtTokenProvider;
+import com.ty.study_with_be.member.domain.model.AuthType;
+import com.ty.study_with_be.member.domain.model.Member;
+import com.ty.study_with_be.member.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
