@@ -3,6 +3,7 @@ package com.ty.study_with_be.global.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ty.study_with_be.global.security.filter.JwtAuthenticationFilter;
 import com.ty.study_with_be.global.security.filter.JwtLoginFilter;
+import com.ty.study_with_be.global.security.handler.ApiAuthenticationEntryPoint;
 import com.ty.study_with_be.global.security.handler.LoginFailureHandler;
 import com.ty.study_with_be.global.security.handler.LoginSuccessHandler;
 import com.ty.study_with_be.global.security.handler.OAuth2LoginSuccessHandler;
@@ -22,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.NullSecurityContextRepository;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -35,6 +37,8 @@ public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final ObjectMapper objectMapper;
+
+    private final ApiAuthenticationEntryPoint apiAuthenticationEntryPoint;
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
@@ -63,6 +67,12 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 세션에서 SecurityContext를 저장/복원하지 않음.
                 .securityContext(security -> security.securityContextRepository(new NullSecurityContextRepository()))
+                .exceptionHandling(exception -> exception
+                        .defaultAuthenticationEntryPointFor(
+                                apiAuthenticationEntryPoint,
+                                new AntPathRequestMatcher("/api/**")
+                        )
+                )
                 // OAuth2 로그인 성공 시 커스텀 핸들러 적용.
                 .oauth2Login(oauth ->
                         oauth.successHandler(oAuthSuccessHandler)
