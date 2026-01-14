@@ -53,7 +53,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
         Map<String, Object> body = Map.of(
-                "memberId", user.getMemberId(),
+                "memberId", user.getLoginId(),
                 "nickname", user.getNickname(),
                 "message", "로그인 성공"
         );
