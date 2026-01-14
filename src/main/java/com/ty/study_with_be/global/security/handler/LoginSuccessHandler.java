@@ -11,10 +11,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Map;
 
+@Component
 @RequiredArgsConstructor
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
@@ -40,7 +42,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         Cookie cookie = new Cookie("ACCESS_TOKEN", accessToken);
         cookie.setHttpOnly(true);
         cookie.setPath("/");
-        cookie.setMaxAge(60 * 60); // 1시간 (초 단위)
+        cookie.setMaxAge(60 * 60);
 
         // secure 옵션은 배포 환경에서 true
         cookie.setSecure(false);

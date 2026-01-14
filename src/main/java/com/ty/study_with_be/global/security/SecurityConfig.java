@@ -28,19 +28,16 @@ import org.springframework.security.web.context.NullSecurityContextRepository;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final OAuth2LoginSuccessHandler successHandler;
+    private final OAuth2LoginSuccessHandler oAuthSuccessHandler;
+
+    private final LoginSuccessHandler loginSuccessHandler;
+    private final LoginFailureHandler loginFailureHandler;
+
     private final JwtTokenProvider jwtTokenProvider;
     private final ObjectMapper objectMapper;
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
-
-        JwtLoginFilter jwtLoginFilter = new JwtLoginFilter(authenticationManager, objectMapper);
-        jwtLoginFilter.setFilterProcessesUrl("/api/auth/login");
-        jwtLoginFilter.setAuthenticationSuccessHandler(new LoginSuccessHandler(jwtTokenProvider, objectMapper));
-        jwtLoginFilter.setAuthenticationFailureHandler(new LoginFailureHandler(objectMapper));
-
-        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenProvider);
 
         http
                 // CORS는 전역 설정값을 그대로 사용.
@@ -68,10 +65,18 @@ public class SecurityConfig {
                 .securityContext(security -> security.securityContextRepository(new NullSecurityContextRepository()))
                 // OAuth2 로그인 성공 시 커스텀 핸들러 적용.
                 .oauth2Login(oauth ->
-                        oauth.successHandler(successHandler)
+                        oauth.successHandler(oAuthSuccessHandler)
                 );
+
+        JwtLoginFilter jwtLoginFilter = new JwtLoginFilter(authenticationManager, objectMapper);
+        jwtLoginFilter.setFilterProcessesUrl("/api/auth/login");
+        jwtLoginFilter.setAuthenticationSuccessHandler(loginSuccessHandler);
+        jwtLoginFilter.setAuthenticationFailureHandler(loginFailureHandler);
+
         // JWT 인증 필터를 기본 인증 필터 앞에 배치.
         http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+        //  Local 로그인 필터 (JWT 발급)
+        http.addFilterAt(jwtLoginFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
