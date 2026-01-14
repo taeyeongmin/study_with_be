@@ -11,7 +11,6 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 public class ErrorResponse {
     private final String timestamp;
-    private final int status;
     private final String error;
     private final String errorCode;
     private final String message;
@@ -20,7 +19,6 @@ public class ErrorResponse {
     public static ErrorResponse of(ErrorCode code, String message, String path) {
         return ErrorResponse.builder()
                 .timestamp(OffsetDateTime.now().toString())
-                .status(code.getHttpStatus().value())
                 .error(code.getHttpStatus().getReasonPhrase())
                 .errorCode(code.name())
                 .message(message)

@@ -1,10 +1,10 @@
 package com.ty.study_with_be.member.service;
 
-import com.ty.study_with_be.member.presentation.req.SignupReq;
+import com.ty.study_with_be.auth.presentation.req.SignupReq;
 import com.ty.study_with_be.member.presentation.res.MemberInfoRes;
 import com.ty.study_with_be.member.domain.model.Member;
 import com.ty.study_with_be.member.domain.model.AuthType;
-import com.ty.study_with_be.member.repository.MemberRepository;
+import com.ty.study_with_be.member.infra.MemberJpaRepository;
 import com.ty.study_with_be.member.service.signup.SignupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class MemberService {
 
-    private final MemberRepository memberRepository;
+    private final MemberJpaRepository memberRepository;
     private final Map<String, SignupService> signupServiceMap;
 
     @Transactional
