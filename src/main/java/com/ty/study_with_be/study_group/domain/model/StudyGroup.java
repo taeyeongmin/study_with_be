@@ -1,6 +1,7 @@
 package com.ty.study_with_be.study_group.domain.model;
 
 import com.ty.study_with_be.global.entity.BaseTimeEntity;
+import com.ty.study_with_be.study_group.domain.model.enums.SchedulingType;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyStatus;
 import jakarta.persistence.*;
@@ -8,12 +9,16 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Set;
 
 @Entity
 @Table(
         name = "study_group",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_studygroup_owner_title",
+                columnNames = {"owner_id", "title"}
+        ),
         indexes = {
                 @Index(name = "idx_study_group_status", columnList = "status"),
                 @Index(name = "idx_study_group_created_at", columnList = "created_at"),
@@ -29,6 +34,9 @@ public class StudyGroup extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long studyGroupId;
 
+    @Column(name = "creat_member_Id", nullable = false, length = 60)
+    private Long creatMemberId;
+
     @Column(name = "title", nullable = false, length = 60)
     private String title;
 
@@ -39,7 +47,7 @@ public class StudyGroup extends BaseTimeEntity {
     private String topic;
 
     @Column(name = "region", length = 60)
-    private String region; // 요구사항에 있으니 포함(선택값)
+    private String region;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "study_mode", nullable = false, length = 10)
@@ -60,7 +68,10 @@ public class StudyGroup extends BaseTimeEntity {
     private StudyStatus status;
 
     @Column(name = "apply_deadline_at")
-    private LocalDateTime applyDeadlineAt;
+    private LocalDate applyDeadlineAt;
+
+    @Enumerated(EnumType.STRING)
+    private SchedulingType schedulingType;
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(
@@ -77,7 +88,7 @@ public class StudyGroup extends BaseTimeEntity {
             StudyMode studyMode,
             int capacity,
             String description,
-            java.time.LocalDateTime applyDeadlineAt,
+            LocalDate applyDeadlineAt,
             Set<StudySchedule> schedules
     ) {
         if (capacity < 1) throw new IllegalArgumentException("정원은 1 이상이어야 합니다.");
@@ -131,7 +142,7 @@ public class StudyGroup extends BaseTimeEntity {
         if (this.status != StudyStatus.RECRUITING) {
             throw new IllegalStateException("모집중 상태에서만 가입 신청이 가능합니다.");
         }
-        if (applyDeadlineAt != null && java.time.LocalDateTime.now().isAfter(applyDeadlineAt)) {
+        if (applyDeadlineAt != null && LocalDate.now().isAfter(applyDeadlineAt)) {
             throw new IllegalStateException("가입 신청 마감일이 지났습니다.");
         }
     }

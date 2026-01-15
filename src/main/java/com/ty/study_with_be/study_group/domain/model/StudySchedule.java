@@ -7,7 +7,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.DayOfWeek;
-import java.time.LocalTime;
 
 @Embeddable
 @NoArgsConstructor
@@ -17,17 +16,7 @@ public class StudySchedule {
     @Enumerated(EnumType.STRING)
     private DayOfWeek dayOfWeek;
 
-    private LocalTime startTime;
-    private LocalTime endTime;
-
-    public StudySchedule(DayOfWeek dayOfWeek,
-                         LocalTime startTime,
-                         LocalTime endTime) {
-        if (startTime.isAfter(endTime)) {
-            throw new IllegalArgumentException("시작 시간은 종료 시간보다 늦을 수 없습니다.");
-        }
+    public StudySchedule(DayOfWeek dayOfWeek) {
         this.dayOfWeek = dayOfWeek;
-        this.startTime = startTime;
-        this.endTime = endTime;
     }
 }
