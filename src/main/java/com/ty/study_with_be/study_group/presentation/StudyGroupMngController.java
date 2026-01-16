@@ -3,16 +3,12 @@ package com.ty.study_with_be.study_group.presentation;
 import com.ty.study_with_be.study_group.applicaiton.CreateGroupUseCase;
 import com.ty.study_with_be.study_group.presentation.req.StudyGroupReq;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.enums.Explode;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,10 +38,10 @@ public class StudyGroupMngController {
                     """
     )
     @PostMapping
-    public ResponseEntity createGroup(@Valid @RequestBody StudyGroupReq studyGroupReq){
+    public ResponseEntity createGroup(@Valid @RequestBody StudyGroupReq studyGroupReq, @AuthenticationPrincipal User principal){
 
-        createGroupUseCase.create(studyGroupReq);
+        createGroupUseCase.create(studyGroupReq, Long.valueOf(principal.getUsername()));
 
-        return null;
+        return ResponseEntity.ok().build();
     }
 }

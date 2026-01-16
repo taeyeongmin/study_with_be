@@ -1,6 +1,7 @@
 package com.ty.study_with_be.study_group.domain.model;
 
 import com.ty.study_with_be.global.entity.BaseTimeEntity;
+import com.ty.study_with_be.member.domain.model.Member;
 import com.ty.study_with_be.study_group.domain.model.enums.SchedulingType;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyStatus;
@@ -8,9 +9,16 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.boot.model.naming.IllegalIdentifierException;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
+
+import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Table(
@@ -34,8 +42,8 @@ public class StudyGroup extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long studyGroupId;
 
-    @Column(name = "creat_member_Id", nullable = false, length = 60)
-    private Long creatMemberId;
+    @Column(name = "owner_id", nullable = false)
+    private Long ownerId;
 
     @Column(name = "title", nullable = false, length = 60)
     private String title;
@@ -73,12 +81,26 @@ public class StudyGroup extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private SchedulingType schedulingType;
 
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection(fetch = LAZY)
     @CollectionTable(
             name = "study_group_schedule",
             joinColumns = @JoinColumn(name = "study_group_id")
+
     )
-    private Set<StudySchedule> schedules;
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Set<DayOfWeek> schedules;
+
+    @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<StudyMember> members = new HashSet<>();
+
+//    @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private Set<StudyMember> members = new HashSet<>();
+//
+//    @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private Set<JoinRequest> joinRequests = new HashSet<>();
+//
+//    @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private Set<Notice> notices = new HashSet<>();
 
     public static StudyGroup create(
             String title,
@@ -89,23 +111,38 @@ public class StudyGroup extends BaseTimeEntity {
             int capacity,
             String description,
             LocalDate applyDeadlineAt,
-            Set<StudySchedule> schedules
+            Set<DayOfWeek> schedules,
+            Long memberId,
+            Member member
     ) {
-        if (capacity < 1) throw new IllegalArgumentException("정원은 1 이상이어야 합니다.");
+        if (capacity < 2) throw new IllegalArgumentException("정원은 2 이상이어야 합니다.");
 
-        StudyGroup g = new StudyGroup();
-        g.title = title;
-        g.category = category;
-        g.topic = topic;
-        g.region = region;
-        g.studyMode = studyMode;
-        g.capacity = capacity;
-        g.currentCount = 1; // 방장 포함
-        g.description = description;
-        g.status = StudyStatus.RECRUITING;
-        g.applyDeadlineAt = applyDeadlineAt;
-        g.schedules = schedules;
-        return g;
+        StudyGroup group = new StudyGroup();
+        group.title = title;
+        group.category = category;
+        group.topic = topic;
+        group.region = region;
+        group.studyMode = studyMode;
+        group.capacity = capacity;
+        group.currentCount = 1; // 방장 포함
+        group.description = description;
+        group.status = StudyStatus.RECRUITING;
+        group.applyDeadlineAt = applyDeadlineAt;
+        group.schedules = schedules;
+        group.ownerId = memberId;
+
+        group.addReader(member);
+
+        return group;
+    }
+
+    private void addReader(Member member) {
+
+        if (member == null) throw new IllegalIdentifierException("방장은 필수입니다.");
+        if (this.members.stream().anyMatch(StudyMember::isLeader)) throw new IllegalIdentifierException("이미 방장이 존재합니다.");
+
+        StudyMember leader = StudyMember.leader(this, member);
+        this.members.add(leader);
     }
 
     public void changeStatus(StudyStatus newStatus) {

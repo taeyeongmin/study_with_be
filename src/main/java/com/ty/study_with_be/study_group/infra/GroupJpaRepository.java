@@ -8,8 +8,8 @@ import java.util.Collection;
 
 public interface GroupJpaRepository extends JpaRepository<StudyGroup,Integer> {
 
-    int countByCreatMemberIdAndStatusIn(Long creatMemberId, Collection<StudyStatus> statuses);
+    int countByOwnerIdAndStatusIn(Long ownerId, Collection<StudyStatus> statuses);
 
 
-    boolean existsByCreatMemberIdAndTitleAndStatusIn(Long creatMemberId, String title, Collection<StudyStatus> statuses);
+    boolean existsByOwnerIdAndTitleAndStatusIn(Long ownerId, String title, Collection<StudyStatus> statuses);
 }

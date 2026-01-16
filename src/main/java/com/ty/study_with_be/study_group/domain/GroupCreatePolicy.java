@@ -1,10 +1,12 @@
 package com.ty.study_with_be.study_group.domain;
 
+import com.ty.study_with_be.global.error.ErrorCode;
+import com.ty.study_with_be.global.exception.DomainException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
- * - 한 회원은 모집중 또는 진행중 상태의 스터디 그룹을 최대 N개까지만 생성할 수 있다.
+ * - 한 회원은 모집중 또는 진행중 상태의 스터디 그룹을 최대 2개까지만 생성할 수 있다.
  * - 한 회원은 모집중 또는 진행중 상태의 스터디 그룹을 동일한 이름으로 생성할 수 없다.
  *
  * 두 조건 검증을 위해 각각 쿼리를 조회
@@ -22,9 +24,10 @@ public class GroupCreatePolicy {
 
     public void valid(Long creatMemberId, String title){
 
-        groupRepository.countActiveByMemberId(creatMemberId);
-        groupRepository.existActiveByMemberIdAndTitle(creatMemberId, title);
-
+        if (groupRepository.countActiveByMemberId(creatMemberId) >= 2)
+            throw new DomainException(ErrorCode.TOO_MANY_CREATE_GROUP);
+        if(groupRepository.existActiveByMemberIdAndTitle(creatMemberId, title))
+            throw new DomainException(ErrorCode.DUPLICATE_GROUP_TITLE);
     }
 
 }

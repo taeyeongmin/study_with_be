@@ -2,7 +2,8 @@ package com.ty.study_with_be.auth.application.service;
 
 import com.ty.study_with_be.auth.application.SignupUseCase;
 import com.ty.study_with_be.auth.presentation.req.SignupReq;
-import com.ty.study_with_be.global.exception.DuplicateLoginIdException;
+import com.ty.study_with_be.global.error.ErrorCode;
+import com.ty.study_with_be.global.exception.DomainException;
 import com.ty.study_with_be.member.domain.model.Member;
 import com.ty.study_with_be.member.domain.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ public class SignupService implements SignupUseCase {
     public void register(SignupReq signupReq) {
 
         memberRepository.findByLoginId(signupReq.getLoginId()).ifPresent((m) -> {
-            throw new DuplicateLoginIdException();
+            throw new DomainException(ErrorCode.DUPLICATE_LOGIN_ID);
         });
 
         Member member = Member.createLocalMember(signupReq.getLoginId(),passwordEncoder.encode(signupReq.getPassword()), signupReq.getNickname());
