@@ -9,6 +9,7 @@ import com.ty.study_with_be.study_group.domain.model.StudyGroup;
 import com.ty.study_with_be.study_group.presentation.req.StudyGroupReq;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +20,7 @@ public class CreateGroupService implements CreateGroupUseCase {
     private final MemberRepository memberRepository;
 
     @Override
+    @Transactional
     public void create(StudyGroupReq studyGroupReq, Long memberId) {
 
         // 그룹 생성 규칙 검증

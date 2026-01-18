@@ -7,9 +7,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
+
 public class GroupRepositoryImpl implements GroupRepository {
 
     private final GroupJpaRepository groupJpaRepository;
@@ -35,5 +37,10 @@ public class GroupRepositoryImpl implements GroupRepository {
     @Override
     public void save(StudyGroup studyGroup) {
         groupJpaRepository.save(studyGroup);
+    }
+
+    @Override
+    public Optional<StudyGroup> findById(Long studyGroupId) {
+        return groupJpaRepository.findById(studyGroupId);
     }
 }

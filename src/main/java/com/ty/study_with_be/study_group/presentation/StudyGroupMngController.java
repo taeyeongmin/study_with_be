@@ -1,6 +1,7 @@
 package com.ty.study_with_be.study_group.presentation;
 
 import com.ty.study_with_be.study_group.applicaiton.CreateGroupUseCase;
+import com.ty.study_with_be.study_group.applicaiton.UpdateGroupUseCase;
 import com.ty.study_with_be.study_group.presentation.req.StudyGroupReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -9,18 +10,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("/api/study_group")
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "스터디 그룹", description = "스터디 그룹 생성/조회/관리 API")
+@Tag(name = "스터디 그룹", description = "스터디 그룹 생성/관리 API")
 public class StudyGroupMngController {
 
     private final CreateGroupUseCase createGroupUseCase;
+    private final UpdateGroupUseCase updateGroupUseCase;
 
     @Operation(
             summary = "스터디 그룹 생성",
@@ -41,6 +40,18 @@ public class StudyGroupMngController {
     public ResponseEntity createGroup(@Valid @RequestBody StudyGroupReq studyGroupReq, @AuthenticationPrincipal User principal){
 
         createGroupUseCase.create(studyGroupReq, Long.valueOf(principal.getUsername()));
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{studyGroupId}")
+    public ResponseEntity updateGroup(
+            @Valid @RequestBody StudyGroupReq studyGroupReq
+            , @AuthenticationPrincipal User principal
+            , @PathVariable Long studyGroupId
+    ){
+
+        updateGroupUseCase.update(studyGroupReq, Long.valueOf(principal.getUsername()),studyGroupId);
 
         return ResponseEntity.ok().build();
     }

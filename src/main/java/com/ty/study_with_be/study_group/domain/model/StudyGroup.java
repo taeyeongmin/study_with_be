@@ -196,4 +196,8 @@ public class StudyGroup extends BaseTimeEntity {
         this.capacity = newCapacity;
         // 정원이 늘어나면 RECRUIT_END -> RECRUITING 가능(정책에 따라 방장이 상태 변경)
     }
+
+    public boolean isSuspended() {
+        return this.status == StudyStatus.SUSPENDED;
+    }
 }

@@ -26,6 +26,7 @@ public class GroupCreatePolicy {
 
         if (groupRepository.countActiveByMemberId(creatMemberId) >= 2)
             throw new DomainException(ErrorCode.TOO_MANY_CREATE_GROUP);
+
         if(groupRepository.existActiveByMemberIdAndTitle(creatMemberId, title))
             throw new DomainException(ErrorCode.DUPLICATE_GROUP_TITLE);
     }

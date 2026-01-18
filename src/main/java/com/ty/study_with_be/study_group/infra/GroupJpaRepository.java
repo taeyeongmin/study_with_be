@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Collection;
 
-public interface GroupJpaRepository extends JpaRepository<StudyGroup,Integer> {
+public interface GroupJpaRepository extends JpaRepository<StudyGroup,Long> {
 
     int countByOwnerIdAndStatusIn(Long ownerId, Collection<StudyStatus> statuses);
 

@@ -1,48 +1,32 @@
 package com.ty.study_with_be.study_group.applicaiton.service;
 
-import com.ty.study_with_be.member.domain.model.Member;
 import com.ty.study_with_be.member.domain.repository.MemberRepository;
-import com.ty.study_with_be.study_group.applicaiton.CreateGroupUseCase;
+import com.ty.study_with_be.study_group.applicaiton.UpdateGroupUseCase;
 import com.ty.study_with_be.study_group.domain.GroupCreatePolicy;
 import com.ty.study_with_be.study_group.domain.GroupRepository;
 import com.ty.study_with_be.study_group.domain.model.StudyGroup;
 import com.ty.study_with_be.study_group.presentation.req.StudyGroupReq;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class CreateGroupService implements CreateGroupUseCase {
+public class UpdateGroupService implements UpdateGroupUseCase {
 
     private final GroupRepository groupRepository;
     private final GroupCreatePolicy groupCreatePolicy;
     private final MemberRepository memberRepository;
 
     @Override
-    public void create(StudyGroupReq studyGroupReq, Long memberId) {
+    @Transactional
+    public void update(StudyGroupReq studyGroupReq, Long memberId, Long studyGroupId) {
 
-        // 그룹 생성 규칙 검증
-        groupCreatePolicy.valid(memberId, studyGroupReq.getTitle());
+        // 기존 Group 정보 조회
+        StudyGroup studyGroup = groupRepository.findById(studyGroupId).orElseThrow(() -> new RuntimeException("해당 그룹이 없습니다."));
 
-        // 회원 Entity 조회
-        Member member = memberRepository.findByMemberId(memberId);
-
-        // 그룹 Entity생성
-        StudyGroup studyGroup = StudyGroup.create(
-                studyGroupReq.getTitle()
-                , studyGroupReq.getCategory()
-                , studyGroupReq.getTopic()
-                , studyGroupReq.getRegion()
-                , studyGroupReq.getStudyMode()
-                , studyGroupReq.getCapacity()
-                , studyGroupReq.getDescription()
-                , studyGroupReq.getApplyDeadlineAt()
-                , studyGroupReq.getSchedules()
-                , memberId
-                , member
-        );
+        System.err.println("studyGroup : "+studyGroup);
 
         // DB 저장
-        groupRepository.save(studyGroup);
     }
 }

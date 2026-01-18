@@ -2,6 +2,8 @@ package com.ty.study_with_be.study_group.domain;
 
 import com.ty.study_with_be.study_group.domain.model.StudyGroup;
 
+import java.util.Optional;
+
 public interface GroupRepository {
 
     int countActiveByMemberId(Long memberId);
@@ -9,4 +11,6 @@ public interface GroupRepository {
     boolean existActiveByMemberIdAndTitle(Long memberId, String title);
 
     void save(StudyGroup studyGroup);
+
+    Optional<StudyGroup> findById(Long studyGroupId);
 }
