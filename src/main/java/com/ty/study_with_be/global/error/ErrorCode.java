@@ -23,10 +23,13 @@ public enum ErrorCode {
     TOO_MANY_CREATE_GROUP(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.too_many_create_group"),
     DUPLICATE_GROUP_TITLE(HttpStatus.CONFLICT, "error.study_group.duplicate_group_title"),
 
-    INVALID_STUDY_CAPACITY(HttpStatus.BAD_REQUEST, "error.study_group.invalid_capacity"),
-    OFFLINE_STUDY_REGION_REQUIRED(HttpStatus.BAD_REQUEST, "error.study_group.offline_region_required"),
-    STUDY_OWNER_REQUIRED(HttpStatus.BAD_REQUEST, "error.study_group.owner_required"),
-    DUPLICATE_STUDY_OWNER(HttpStatus.CONFLICT, "error.study_group.duplicate_owner"),
+    INVALID_STUDY_CAPACITY(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.invalid_capacity"),
+    OFFLINE_STUDY_REGION_REQUIRED(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.offline_region_required"),
+    STUDY_OWNER_REQUIRED(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.owner_required"),
+    DUPLICATE_STUDY_OWNER(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.duplicate_owner"),
+    NOT_GROUP_OWNER(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.not_group_owner"),
+    NOT_RECRUITING(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.not_recruiting"),
+    NOT_ONLY_OWNER(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.not_only_owner"),
 
 
 

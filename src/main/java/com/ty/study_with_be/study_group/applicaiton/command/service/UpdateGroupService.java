@@ -1,13 +1,11 @@
-package com.ty.study_with_be.study_group.applicaiton.service;
+package com.ty.study_with_be.study_group.applicaiton.command.service;
 
-import com.ty.study_with_be.member.domain.repository.MemberRepository;
-import com.ty.study_with_be.study_group.applicaiton.UpdateGroupUseCase;
-import com.ty.study_with_be.study_group.domain.GroupCreatePolicy;
+import com.ty.study_with_be.study_group.applicaiton.command.UpdateGroupUseCase;
 import com.ty.study_with_be.study_group.domain.GroupRepository;
 import com.ty.study_with_be.study_group.domain.GroupUpdatePolicy;
 import com.ty.study_with_be.study_group.domain.model.StudyGroup;
-import com.ty.study_with_be.study_group.presentation.req.StudyGroupOperationInfoUpdateReq;
-import com.ty.study_with_be.study_group.presentation.req.StudyGroupReq;
+import com.ty.study_with_be.study_group.presentation.command.dto.StudyGroupOperationInfoUpdateReq;
+import com.ty.study_with_be.study_group.presentation.command.dto.StudyGroupReq;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

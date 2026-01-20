@@ -1,4 +1,4 @@
-package com.ty.study_with_be.study_group.presentation.req;
+package com.ty.study_with_be.study_group.presentation.command.dto;
 
 import com.ty.study_with_be.study_group.domain.model.enums.SchedulingType;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;

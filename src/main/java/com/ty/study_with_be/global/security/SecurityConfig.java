@@ -11,6 +11,7 @@ import com.ty.study_with_be.global.security.token.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -63,6 +64,7 @@ public class SecurityConfig {
                 // 인증 관련 엔드포인트만 비로그인 허용.
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/oauth2/**", "/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/study_group/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 // JWT만 사용하므로 서버 세션은 생성하지 않음.

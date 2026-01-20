@@ -14,4 +14,5 @@ public interface GroupJpaRepository extends JpaRepository<StudyGroup,Long> {
     boolean existsByOwnerIdAndTitleAndOperationStatusIn(Long ownerId, String title, Collection<OperationStatus> statuses);
 
     boolean existsByOwnerIdAndTitleAndOperationStatusInAndStudyGroupIdNot(Long ownerId, String title, Collection<OperationStatus> operationStatuses, Long studyGroupId);
+
 }

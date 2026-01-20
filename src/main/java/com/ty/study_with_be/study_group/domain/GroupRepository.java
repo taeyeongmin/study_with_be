@@ -15,4 +15,6 @@ public interface GroupRepository {
     void save(StudyGroup studyGroup);
 
     Optional<StudyGroup> findById(Long studyGroupId);
+
+    void delete(StudyGroup studyGroup);
 }

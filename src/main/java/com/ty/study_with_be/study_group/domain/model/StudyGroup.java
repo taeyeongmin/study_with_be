@@ -15,7 +15,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.hibernate.boot.model.naming.IllegalIdentifierException;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -172,6 +171,20 @@ public class StudyGroup extends BaseTimeEntity {
         this.studyMode = studyMode;
         this.schedulingType = schedulingType;
         this.schedules = schedules;
+    }
+
+    public boolean isOwner(Long loginMemberId) {
+        return this.ownerId.equals(loginMemberId);
+    }
+
+    public void validDelete() {
+        if (recruitStatus != RecruitStatus.RECRUITING) {
+            throw new DomainException(ErrorCode.NOT_RECRUITING);
+        }
+
+        if (currentCount != 1) {
+            throw new DomainException(ErrorCode.NOT_ONLY_OWNER);
+        }
     }
 
 //    public void updateBasicInfo() {

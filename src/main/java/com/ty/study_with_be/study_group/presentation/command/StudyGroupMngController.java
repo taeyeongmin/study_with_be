@@ -1,9 +1,10 @@
-package com.ty.study_with_be.study_group.presentation;
+package com.ty.study_with_be.study_group.presentation.command;
 
-import com.ty.study_with_be.study_group.applicaiton.CreateGroupUseCase;
-import com.ty.study_with_be.study_group.applicaiton.UpdateGroupUseCase;
-import com.ty.study_with_be.study_group.presentation.req.StudyGroupOperationInfoUpdateReq;
-import com.ty.study_with_be.study_group.presentation.req.StudyGroupReq;
+import com.ty.study_with_be.study_group.applicaiton.command.CreateGroupUseCase;
+import com.ty.study_with_be.study_group.applicaiton.command.DeleteGroupUseCase;
+import com.ty.study_with_be.study_group.applicaiton.command.UpdateGroupUseCase;
+import com.ty.study_with_be.study_group.presentation.command.dto.StudyGroupOperationInfoUpdateReq;
+import com.ty.study_with_be.study_group.presentation.command.dto.StudyGroupReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -22,6 +23,7 @@ public class StudyGroupMngController {
 
     private final CreateGroupUseCase createGroupUseCase;
     private final UpdateGroupUseCase updateGroupUseCase;
+    private final DeleteGroupUseCase deleteGroupUseCase;
 
     @PreAuthorize("isAuthenticated()")
     @Operation(
@@ -90,6 +92,29 @@ public class StudyGroupMngController {
             @Valid @RequestBody StudyGroupOperationInfoUpdateReq req
     ) {
         updateGroupUseCase.updateOperationInfo(studyGroupId, req);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/{studyGroupId}")
+    @Operation(
+            summary = "스터디그룹 삭제",
+            description = """
+                    ## 기능 설명
+                    - `스터디그룹을 제거한다.`
+                    ---
+                    ## 상세 설명
+                    - **방장만 삭제 가능하다.
+                    - **모집중 상태이며 방장 혼자만 참여 중일 때만 삭제 가능하다.**
+                    - **삭제 시 물리 삭제를 수행한다.**
+                    """
+    )
+    public ResponseEntity deleteGroup(
+            @PathVariable Long studyGroupId
+            , @AuthenticationPrincipal User principal
+    ) {
+        deleteGroupUseCase.deleteGroup(studyGroupId, Long.valueOf(principal.getUsername()));
 
         return ResponseEntity.ok().build();
     }

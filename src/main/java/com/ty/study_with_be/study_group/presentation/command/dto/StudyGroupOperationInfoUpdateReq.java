@@ -1,4 +1,4 @@
-package com.ty.study_with_be.study_group.presentation.req;
+package com.ty.study_with_be.study_group.presentation.command.dto;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.ty.study_with_be.study_group.domain.model.enums.SchedulingType;
@@ -22,7 +22,7 @@ public class StudyGroupOperationInfoUpdateReq {
     @Schema(description = "스터디 모드", example = "ONLINE", implementation = StudyMode.class)
     private StudyMode studyMode;
     @NotNull
-    @Schema(description = "운영 일정 유형", example = "WEEKLY", implementation =  SchedulingType.class)
+    @Schema(description = "운영 일정 유형", example = "SCHEDULED", implementation =  SchedulingType.class)
     private SchedulingType schedulingType;
 
     @Schema(description = "운영 요일(스케줄)", example = "[\"MONDAY\",\"WEDNESDAY\"]")
