@@ -10,6 +10,8 @@ public interface GroupRepository {
 
     boolean existActiveByMemberIdAndTitle(Long memberId, String title);
 
+    boolean existsActiveByMemberIdAndTitleExcludingGroupId(Long memberId, String title, Long groupId);
+
     void save(StudyGroup studyGroup);
 
     Optional<StudyGroup> findById(Long studyGroupId);

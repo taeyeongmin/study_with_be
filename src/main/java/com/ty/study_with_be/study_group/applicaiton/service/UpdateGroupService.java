@@ -4,7 +4,9 @@ import com.ty.study_with_be.member.domain.repository.MemberRepository;
 import com.ty.study_with_be.study_group.applicaiton.UpdateGroupUseCase;
 import com.ty.study_with_be.study_group.domain.GroupCreatePolicy;
 import com.ty.study_with_be.study_group.domain.GroupRepository;
+import com.ty.study_with_be.study_group.domain.GroupUpdatePolicy;
 import com.ty.study_with_be.study_group.domain.model.StudyGroup;
+import com.ty.study_with_be.study_group.presentation.req.StudyGroupOperationInfoUpdateReq;
 import com.ty.study_with_be.study_group.presentation.req.StudyGroupReq;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,18 +17,46 @@ import org.springframework.transaction.annotation.Transactional;
 public class UpdateGroupService implements UpdateGroupUseCase {
 
     private final GroupRepository groupRepository;
-    private final GroupCreatePolicy groupCreatePolicy;
-    private final MemberRepository memberRepository;
+    private final GroupUpdatePolicy groupUpdatePolicy;
 
     @Override
     @Transactional
-    public void update(StudyGroupReq studyGroupReq, Long memberId, Long studyGroupId) {
+    public void updateAll(StudyGroupReq studyGroupReq, Long memberId, Long studyGroupId) {
 
         // 기존 Group 정보 조회
         StudyGroup studyGroup = groupRepository.findById(studyGroupId).orElseThrow(() -> new RuntimeException("해당 그룹이 없습니다."));
 
-        System.err.println("studyGroup : "+studyGroup);
+        // 수정 정책 검증
+        groupUpdatePolicy.valid(memberId,studyGroupReq.getTitle(),studyGroupId);
+
+        // 값 변경
+        studyGroup.updateInfo(
+                studyGroupReq.getTitle()
+                , studyGroupReq.getCategory()
+                , studyGroupReq.getTopic()
+                , studyGroupReq.getRegion()
+                , studyGroupReq.getStudyMode()
+                , studyGroupReq.getCapacity()
+                , studyGroupReq.getDescription()
+                , studyGroupReq.getApplyDeadlineAt()
+                , studyGroupReq.getSchedules()
+        );
 
         // DB 저장
+        groupRepository.save(studyGroup);
+    }
+
+    @Override
+    public void updateOperationInfo(Long studyGroupId, StudyGroupOperationInfoUpdateReq req) {
+
+        // 기존 Group 정보 조회
+        StudyGroup studyGroup = groupRepository.findById(studyGroupId).orElseThrow(() -> new RuntimeException("해당 그룹이 없습니다."));
+
+        // 값 변경
+        studyGroup.updateOperationInfo(req.getCapacity(), req.getStudyMode(), req.getSchedulingType(), req.getSchedules());
+
+        // DB 저장
+        groupRepository.save(studyGroup);
+
     }
 }

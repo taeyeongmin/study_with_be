@@ -1,10 +1,14 @@
 package com.ty.study_with_be.study_group.domain.model;
 
+import com.nimbusds.oauth2.sdk.util.StringUtils;
 import com.ty.study_with_be.global.entity.BaseTimeEntity;
+import com.ty.study_with_be.global.error.ErrorCode;
+import com.ty.study_with_be.global.exception.DomainException;
 import com.ty.study_with_be.member.domain.model.Member;
+import com.ty.study_with_be.study_group.domain.model.enums.OperationStatus;
+import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.SchedulingType;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
-import com.ty.study_with_be.study_group.domain.model.enums.StudyStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -23,12 +27,7 @@ import static jakarta.persistence.FetchType.LAZY;
 @Entity
 @Table(
         name = "study_group",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_studygroup_owner_title",
-                columnNames = {"owner_id", "title"}
-        ),
         indexes = {
-                @Index(name = "idx_study_group_status", columnList = "status"),
                 @Index(name = "idx_study_group_created_at", columnList = "created_at"),
                 @Index(name = "idx_study_group_category", columnList = "category"),
                 @Index(name = "idx_study_group_region", columnList = "region")
@@ -72,8 +71,12 @@ public class StudyGroup extends BaseTimeEntity {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 15)
-    private StudyStatus status;
+    @Column(name = "recruit_status", nullable = false, length = 15)
+    private RecruitStatus recruitStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "operation_status", nullable = false, length = 15)
+    private OperationStatus operationStatus;
 
     @Column(name = "apply_deadline_at")
     private LocalDate applyDeadlineAt;
@@ -92,9 +95,6 @@ public class StudyGroup extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<StudyMember> members = new HashSet<>();
-
-//    @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private Set<StudyMember> members = new HashSet<>();
 //
 //    @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
 //    private Set<JoinRequest> joinRequests = new HashSet<>();
@@ -115,7 +115,8 @@ public class StudyGroup extends BaseTimeEntity {
             Long memberId,
             Member member
     ) {
-        if (capacity < 2) throw new IllegalArgumentException("정원은 2 이상이어야 합니다.");
+        if (capacity < 2) throw new DomainException(ErrorCode.INVALID_STUDY_CAPACITY);
+        if (studyMode == StudyMode.OFFLINE && StringUtils.isBlank(region)) throw new DomainException(ErrorCode.OFFLINE_STUDY_REGION_REQUIRED);
 
         StudyGroup group = new StudyGroup();
         group.title = title;
@@ -126,7 +127,8 @@ public class StudyGroup extends BaseTimeEntity {
         group.capacity = capacity;
         group.currentCount = 1; // 방장 포함
         group.description = description;
-        group.status = StudyStatus.RECRUITING;
+        group.recruitStatus = RecruitStatus.RECRUITING;
+        group.operationStatus = OperationStatus.PREPARING;
         group.applyDeadlineAt = applyDeadlineAt;
         group.schedules = schedules;
         group.ownerId = memberId;
@@ -138,66 +140,100 @@ public class StudyGroup extends BaseTimeEntity {
 
     private void addReader(Member member) {
 
-        if (member == null) throw new IllegalIdentifierException("방장은 필수입니다.");
-        if (this.members.stream().anyMatch(StudyMember::isLeader)) throw new IllegalIdentifierException("이미 방장이 존재합니다.");
+        if (member == null) throw new DomainException(ErrorCode.STUDY_OWNER_REQUIRED);
+        if (this.members.stream().anyMatch(StudyMember::isLeader)) throw new DomainException(ErrorCode.DUPLICATE_STUDY_OWNER);;
 
         StudyMember leader = StudyMember.leader(this, member);
         this.members.add(leader);
     }
 
-    public void changeStatus(StudyStatus newStatus) {
-        // 정책(간단 버전): CLOSED/SUSPENDED 후 되돌리기 여부는 추후 정책화
-        this.status = newStatus;
+    public void updateInfo(String title, String category, String topic, String region,  StudyMode studyMode, int capacity, String description, LocalDate applyDeadlineAt, Set<DayOfWeek> schedules) {
+
+        if (studyMode == StudyMode.OFFLINE && StringUtils.isBlank(region))
+            throw new DomainException(ErrorCode.OFFLINE_STUDY_REGION_REQUIRED);;
+
+        this.title = title;
+        this.category = category;
+        this.topic = topic;
+        this.region = region;
+        this.studyMode = studyMode;
+        this.capacity = capacity;
+        this.description = description;
+        this.applyDeadlineAt = applyDeadlineAt;
+        this.schedules = schedules;
     }
 
-    public void increaseMemberCount() {
-        if (this.currentCount >= this.capacity) {
+    public void updateOperationInfo(int capacity, StudyMode studyMode, SchedulingType schedulingType, Set<DayOfWeek> schedules) {
 
-            // 가득 찼다면 RECRUIT_END로 간주
-            this.status = StudyStatus.RECRUIT_END;
-            throw new IllegalStateException("정원이 초과되어 승인할 수 없습니다.");
-        }
-        this.currentCount++;
-        if (this.currentCount == this.capacity) {
-            this.status = StudyStatus.RECRUIT_END;
-        }
+        if (studyMode == StudyMode.OFFLINE && StringUtils.isBlank(region))
+            throw new DomainException(ErrorCode.OFFLINE_STUDY_REGION_REQUIRED);
+
+        this.capacity = capacity;
+        this.studyMode = studyMode;
+        this.schedulingType = schedulingType;
+        this.schedules = schedules;
     }
 
-    public void decreaseMemberCount() {
-        if (this.currentCount <= 1) throw new IllegalStateException("현재 인원 감소 불가");
-        this.currentCount--;
-        // 인원이 빠지면 다시 모집중 전환 가능한 정책(방장 전환) - 여기선 자동 전환 안함
-    }
+//    public void updateBasicInfo() {
+//        this.title = title;
+//        this.category = category;
+//        this.topic = topic;
+//        this.region = region;
+//        this.studyMode = studyMode;
+//        this.capacity = capacity;
+//        this.description = description;
+//        this.applyDeadlineAt = applyDeadlineAt;
+//        this.schedules = schedules;
+//    }
 
-    public void validateAccessible() {
-        if (this.status == StudyStatus.SUSPENDED) {
-            throw new IllegalStateException("비활성 스터디는 접근할 수 없습니다.");
-        }
-    }
-
-    public void validateCanApply() {
-        if (this.status != StudyStatus.RECRUITING) {
-            throw new IllegalStateException("모집중 상태에서만 가입 신청이 가능합니다.");
-        }
-        if (applyDeadlineAt != null && LocalDate.now().isAfter(applyDeadlineAt)) {
-            throw new IllegalStateException("가입 신청 마감일이 지났습니다.");
-        }
-    }
-
-    public void validateCanEdit(boolean isLeader) {
-        if (!isLeader) throw new IllegalStateException("방장만 수정할 수 있습니다.");
-        if (this.status == StudyStatus.CLOSED) throw new IllegalStateException("종료된 스터디는 수정할 수 없습니다.");
-    }
-
-    public void changeCapacity(int newCapacity) {
-        if (newCapacity < this.currentCount) {
-            throw new IllegalArgumentException("정원은 현재 인원 이상이어야 합니다.");
-        }
-        this.capacity = newCapacity;
-        // 정원이 늘어나면 RECRUIT_END -> RECRUITING 가능(정책에 따라 방장이 상태 변경)
-    }
-
-    public boolean isSuspended() {
-        return this.status == StudyStatus.SUSPENDED;
-    }
+//    public void increaseMemberCount() {
+//        if (this.currentCount >= this.capacity) {
+//
+//            // 가득 찼다면 RECRUIT_END로 간주
+//            this.status = RecruitStatus.RECRUIT_END;
+//            throw new IllegalStateException("정원이 초과되어 승인할 수 없습니다.");
+//        }
+//        this.currentCount++;
+//        if (this.currentCount == this.capacity) {
+//            this.status = RecruitStatus.RECRUIT_END;
+//        }
+//    }
+//
+//    public void decreaseMemberCount() {
+//        if (this.currentCount <= 1) throw new IllegalStateException("현재 인원 감소 불가");
+//        this.currentCount--;
+//        // 인원이 빠지면 다시 모집중 전환 가능한 정책(방장 전환) - 여기선 자동 전환 안함
+//    }
+//
+//    public void validateAccessible() {
+//        if (this.status == RecruitStatus.SUSPENDED) {
+//            throw new IllegalStateException("비활성 스터디는 접근할 수 없습니다.");
+//        }
+//    }
+//
+//    public void validateCanApply() {
+//        if (this.status != RecruitStatus.RECRUITING) {
+//            throw new IllegalStateException("모집중 상태에서만 가입 신청이 가능합니다.");
+//        }
+//        if (applyDeadlineAt != null && LocalDate.now().isAfter(applyDeadlineAt)) {
+//            throw new IllegalStateException("가입 신청 마감일이 지났습니다.");
+//        }
+//    }
+//
+//    public void validateCanEdit(boolean isLeader) {
+//        if (!isLeader) throw new IllegalStateException("방장만 수정할 수 있습니다.");
+//        if (this.status == RecruitStatus.CLOSED) throw new IllegalStateException("종료된 스터디는 수정할 수 없습니다.");
+//    }
+//
+//    public void changeCapacity(int newCapacity) {
+//        if (newCapacity < this.currentCount) {
+//            throw new IllegalArgumentException("정원은 현재 인원 이상이어야 합니다.");
+//        }
+//        this.capacity = newCapacity;
+//        // 정원이 늘어나면 RECRUIT_END -> RECRUITING 가능(정책에 따라 방장이 상태 변경)
+//    }
+//
+//    public boolean isSuspended() {
+//        return this.status == RecruitStatus.SUSPENDED;
+//    }
 }

@@ -2,7 +2,7 @@ package com.ty.study_with_be.study_group.infra;
 
 import com.ty.study_with_be.study_group.domain.GroupRepository;
 import com.ty.study_with_be.study_group.domain.model.StudyGroup;
-import com.ty.study_with_be.study_group.domain.model.enums.StudyStatus;
+import com.ty.study_with_be.study_group.domain.model.enums.OperationStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -16,22 +16,28 @@ public class GroupRepositoryImpl implements GroupRepository {
 
     private final GroupJpaRepository groupJpaRepository;
 
-    private static final List<StudyStatus> ACTIVE_STATUSES =
+    private static final List<OperationStatus> ACTIVE_STATUSES =
             List.of(
-                    StudyStatus.RECRUITING,
-                    StudyStatus.ONGOING
+                    OperationStatus.PREPARING,
+                    OperationStatus.ONGOING
             );
 
     @Override
     public int countActiveByMemberId(Long memberId) {
 
-        return groupJpaRepository.countByOwnerIdAndStatusIn(memberId, ACTIVE_STATUSES);
+        return groupJpaRepository.countByOwnerIdAndOperationStatusIn(memberId, ACTIVE_STATUSES);
     }
 
     @Override
     public boolean existActiveByMemberIdAndTitle(Long memberId,  String title) {
 
-        return groupJpaRepository.existsByOwnerIdAndTitleAndStatusIn(memberId,title,ACTIVE_STATUSES);
+        return groupJpaRepository.existsByOwnerIdAndTitleAndOperationStatusIn(memberId,title,ACTIVE_STATUSES);
+    }
+
+    @Override
+    public boolean existsActiveByMemberIdAndTitleExcludingGroupId(Long memberId, String title, Long groupId) {
+
+        return groupJpaRepository.existsByOwnerIdAndTitleAndOperationStatusInAndStudyGroupIdNot(memberId,title,ACTIVE_STATUSES,groupId);
     }
 
     @Override

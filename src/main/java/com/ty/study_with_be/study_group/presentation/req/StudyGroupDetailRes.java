@@ -1,12 +1,15 @@
 package com.ty.study_with_be.study_group.presentation.req;
 
 import com.ty.study_with_be.study_group.domain.model.StudyGroup;
+import com.ty.study_with_be.study_group.domain.model.enums.OperationStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
-import com.ty.study_with_be.study_group.domain.model.enums.StudyStatus;
+import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Getter
 @Builder
@@ -25,7 +28,10 @@ public class StudyGroupDetailRes {
     private int currentCount;
 
     private String description;
-    private StudyStatus status;
+    private RecruitStatus recruitStatus;
+    private OperationStatus operationStatus;
+
+    private Set<DayOfWeek> schedules;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -42,7 +48,9 @@ public class StudyGroupDetailRes {
                 .capacity(group.getCapacity())
                 .currentCount(group.getCurrentCount())
                 .description(group.getDescription())
-                .status(group.getStatus())
+                .recruitStatus(group.getRecruitStatus())
+                .operationStatus(group.getOperationStatus())
+                .schedules(group.getSchedules())
                 .createdAt(group.getCreatedAt())
                 .updatedAt(group.getUpdatedAt())
                 .build();

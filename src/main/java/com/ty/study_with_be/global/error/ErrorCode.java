@@ -23,6 +23,13 @@ public enum ErrorCode {
     TOO_MANY_CREATE_GROUP(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.too_many_create_group"),
     DUPLICATE_GROUP_TITLE(HttpStatus.CONFLICT, "error.study_group.duplicate_group_title"),
 
+    INVALID_STUDY_CAPACITY(HttpStatus.BAD_REQUEST, "error.study_group.invalid_capacity"),
+    OFFLINE_STUDY_REGION_REQUIRED(HttpStatus.BAD_REQUEST, "error.study_group.offline_region_required"),
+    STUDY_OWNER_REQUIRED(HttpStatus.BAD_REQUEST, "error.study_group.owner_required"),
+    DUPLICATE_STUDY_OWNER(HttpStatus.CONFLICT, "error.study_group.duplicate_owner"),
+
+
+
 
     // 5xx
     EXTERNAL_API_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "error.external.timeout"),
