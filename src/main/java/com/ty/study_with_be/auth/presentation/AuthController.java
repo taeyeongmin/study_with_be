@@ -3,6 +3,7 @@ package com.ty.study_with_be.auth.presentation;
 import com.ty.study_with_be.auth.application.SignupUseCase;
 import com.ty.study_with_be.auth.presentation.req.SignupReq;
 import com.ty.study_with_be.global.security.handler.CookieUtils;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
+@Tag(name = "인증/인가", description = "로그인 관련 API")
 public class AuthController {
 
     private final SignupUseCase signupUseCase;

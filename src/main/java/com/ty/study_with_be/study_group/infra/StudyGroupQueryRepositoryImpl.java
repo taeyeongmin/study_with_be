@@ -1,0 +1,199 @@
+package com.ty.study_with_be.study_group.infra;
+
+import com.ty.study_with_be.study_group.domain.model.enums.JoinRequestStatus;
+import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
+import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
+import com.ty.study_with_be.study_group.query.dto.StudyGroupDetailRes;
+import com.ty.study_with_be.study_group.query.dto.StudyGroupListItem;
+import com.ty.study_with_be.study_group.query.repository.StudyGroupQueryRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+@Repository
+@RequiredArgsConstructor
+public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository {
+
+    private final EntityManager em;
+
+    @Override
+    public Optional<StudyGroupDetailRes> findDetail(Long studyGroupId) {
+
+        return em.createQuery("""
+            select new com.ty.study_with_be.study_group.query.dto.StudyGroupDetailRes(
+                sg.studyGroupId,
+                sg.title,
+    
+                sg.category,
+                cat.codeNm,
+    
+                sg.topic,
+    
+                sg.region,
+                reg.codeNm,
+    
+                sg.studyMode,
+                sg.capacity,
+                sg.currentCount,
+                sg.description,
+    
+                sg.recruitStatus,
+                sg.operationStatus,
+                sg.applyDeadlineAt,
+    
+                m.memberId,
+                m.loginId,
+                m.nickname,
+    
+                sg.createdAt,
+                sg.updatedAt
+            )
+            from StudyGroup sg
+            join Member m
+                on m.memberId = sg.ownerId
+            left join CommonCode cat
+                on cat.code = sg.category
+               and cat.useYn = true
+               and cat.depth = 2
+            left join CommonCode reg
+                on reg.code = sg.region
+               and reg.useYn = true
+               and reg.depth = 2
+            where sg.studyGroupId = :id
+        """, StudyGroupDetailRes.class)
+                .setParameter("id", studyGroupId)
+                .getResultStream()
+                .findFirst();
+    }
+
+    @Override
+    public Page<StudyGroupListItem> findStudyGroups(String category, String topic, String region, StudyMode studyMode, RecruitStatus recruitStatus, Pageable pageable) {
+
+        //  where 구성
+        StringBuilder where = new StringBuilder(" where 1=1 ");
+
+        Map<String, Object> params = new HashMap<>();
+
+        if (StringUtils.hasText(category)) {
+            where.append(" and sg.category = :category ");
+            params.put("category", category);
+        }
+        if (StringUtils.hasText(topic)) {
+            // 요구사항: 주제 필터(보통 키워드 검색이 자연스러움)
+            where.append(" and sg.topic like :topic ");
+            params.put("topic", "%" + topic.trim() + "%");
+        }
+        if (StringUtils.hasText(region)) {
+            where.append(" and sg.region = :region ");
+            params.put("region", region);
+        }
+        if (studyMode != null) {
+            where.append(" and sg.studyMode = :studyMode ");
+            params.put("studyMode", studyMode);
+        }
+        if (recruitStatus != null) {
+            where.append(" and sg.recruitStatus = :recruitStatus ");
+            params.put("recruitStatus", recruitStatus);
+        }
+
+        // ---- content query (목록) ----
+        String contentJpql = """
+            select new com.ty.study_with_be.study_group.query.dto.StudyGroupListItem(
+                sg.studyGroupId,
+                sg.title,
+                sg.category,
+                cat.codeNm,
+                sg.topic,
+                sg.recruitStatus,
+                case sg.recruitStatus
+                    when com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus.RECRUITING
+                        then '모집중'
+                    else '모집마감'
+                end,
+                sg.description,
+                sg.capacity,
+                sg.currentCount,
+                case
+                    when sg.applyDeadlineAt is null then null
+                    else cast(function('datediff', sg.applyDeadlineAt, current_date) as integer)
+                end
+            )
+            from StudyGroup sg
+            left join CommonCode cat
+                on cat.code = sg.category
+               and cat.useYn = true
+               and cat.depth = 2
+        """ + where + """
+            order by sg.createdAt desc
+        """;
+
+        TypedQuery<StudyGroupListItem> contentQuery =
+                em.createQuery(contentJpql, StudyGroupListItem.class);
+
+        params.forEach(contentQuery::setParameter);
+
+        contentQuery.setFirstResult((int) pageable.getOffset());
+        contentQuery.setMaxResults(pageable.getPageSize());
+
+        List<StudyGroupListItem> content = contentQuery.getResultList();
+
+        // count query (총 개수)
+        String countJpql = """
+            select count(sg.studyGroupId)
+            from StudyGroup sg
+        """ + where;
+
+        TypedQuery<Long> countQuery = em.createQuery(countJpql, Long.class);
+        params.forEach(countQuery::setParameter);
+
+        long total = countQuery.getSingleResult();
+
+        return new PageImpl<>(content, pageable, total);
+
+    }
+
+
+    @Override
+    public boolean existsMember(Long studyGroupId, Long memberId) {
+
+        Long count = em.createQuery("""
+            select count(sm)
+            from StudyMember sm
+            where sm.studyGroup.studyGroupId = :groupId
+              and sm.member.memberId = :memberId
+        """, Long.class)
+                .setParameter("groupId", studyGroupId)
+                .setParameter("memberId", memberId)
+                .getSingleResult();
+
+        return count > 0;
+    }
+
+    @Override
+    public boolean existsPendingJoin(Long studyGroupId, Long memberId) {
+
+        Long count = em.createQuery("""
+            select count(jr)
+            from JoinRequest jr
+            where jr.studyGroupId = :studyGroupId
+              and jr.requesterId = :memberId
+              and jr.status = :status
+        """, Long.class)
+                .setParameter("studyGroupId", studyGroupId)
+                .setParameter("memberId", memberId)
+                .setParameter("status", JoinRequestStatus.PENDING)
+                .getSingleResult();
+
+        return count > 0;
+    }
+}

@@ -3,6 +3,7 @@ package com.ty.study_with_be.global.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ty.study_with_be.global.security.filter.JwtAuthenticationFilter;
 import com.ty.study_with_be.global.security.filter.JwtLoginFilter;
+import com.ty.study_with_be.global.security.handler.ApiAuthenticationEntryPoint;
 import com.ty.study_with_be.global.security.handler.LoginFailureHandler;
 import com.ty.study_with_be.global.security.handler.LoginSuccessHandler;
 import com.ty.study_with_be.global.security.handler.OAuth2LoginSuccessHandler;
@@ -10,9 +11,11 @@ import com.ty.study_with_be.global.security.token.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -22,9 +25,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.NullSecurityContextRepository;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -35,6 +40,8 @@ public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final ObjectMapper objectMapper;
+
+    private final ApiAuthenticationEntryPoint apiAuthenticationEntryPoint;
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
@@ -57,12 +64,20 @@ public class SecurityConfig {
                 // 인증 관련 엔드포인트만 비로그인 허용.
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/oauth2/**", "/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/study_group/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/common-code/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 // JWT만 사용하므로 서버 세션은 생성하지 않음.
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 세션에서 SecurityContext를 저장/복원하지 않음.
                 .securityContext(security -> security.securityContextRepository(new NullSecurityContextRepository()))
+                .exceptionHandling(exception -> exception
+                        .defaultAuthenticationEntryPointFor(
+                                apiAuthenticationEntryPoint,
+                                new AntPathRequestMatcher("/api/**")
+                        )
+                )
                 // OAuth2 로그인 성공 시 커스텀 핸들러 적용.
                 .oauth2Login(oauth ->
                         oauth.successHandler(oAuthSuccessHandler)

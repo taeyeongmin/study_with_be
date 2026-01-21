@@ -2,12 +2,14 @@ package com.ty.study_with_be.study_group.domain.model;
 
 import com.ty.study_with_be.global.entity.BaseTimeEntity;
 import com.ty.study_with_be.member.domain.model.Member;
-import com.ty.study_with_be.study_group.domain.model.enums.StudyStatus;
+import com.ty.study_with_be.study_group.domain.model.enums.OperationStatus;
+import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.lang.management.OperatingSystemMXBean;
 import java.time.LocalDateTime;
 
 @Entity
@@ -49,9 +51,8 @@ public class Notice extends BaseTimeEntity {
 
     public static Notice create(StudyGroup group, Member writer, String title, String content, boolean pinned) {
 
-        // 작성 제한: CLOSED 불가, SUSPENDED 제한(정책상 불가로 처리)
-        if (group.getStatus() == StudyStatus.CLOSED) throw new IllegalStateException("종료된 스터디는 공지 작성 불가");
-        if (group.getStatus() == StudyStatus.SUSPENDED) throw new IllegalStateException("비활성 스터디는 공지 작성 제한");
+        // 작성 제한: CLOSED 불가)
+        if (group.getOperationStatus() == OperationStatus.CLOSED) throw new IllegalStateException("종료된 스터디는 공지 작성 불가");
 
         Notice notice = new Notice();
         notice.studyGroup = group;
