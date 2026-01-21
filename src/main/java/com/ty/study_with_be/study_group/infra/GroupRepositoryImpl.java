@@ -3,7 +3,6 @@ package com.ty.study_with_be.study_group.infra;
 import com.ty.study_with_be.study_group.domain.GroupRepository;
 import com.ty.study_with_be.study_group.domain.model.StudyGroup;
 import com.ty.study_with_be.study_group.domain.model.enums.OperationStatus;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -15,7 +14,6 @@ import java.util.Optional;
 public class GroupRepositoryImpl implements GroupRepository {
 
     private final GroupJpaRepository groupJpaRepository;
-    private final EntityManager em;
 
     private static final List<OperationStatus> ACTIVE_STATUSES =
             List.of(
