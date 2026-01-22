@@ -30,6 +30,10 @@ public enum ErrorCode {
     NOT_GROUP_OWNER(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.not_group_owner"),
     NOT_RECRUITING(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.not_recruiting"),
     NOT_ONLY_OWNER(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.not_only_owner"),
+    CAPACITY_EXCEEDED(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.capacity_exceeded"),
+
+    ALREADY_JOINED(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.already_joined"),
+    DUPLICATE_REQUEST(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.duplicate_request"),
 
 
 

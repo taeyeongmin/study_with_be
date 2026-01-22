@@ -1,9 +1,11 @@
 package com.ty.study_with_be.study_group.applicaiton.query;
 
+import com.ty.study_with_be.join_request.query.repository.JoinRequestQueryRepository;
 import com.ty.study_with_be.study_group.domain.GroupRepository;
 import com.ty.study_with_be.study_group.domain.model.StudyGroup;
 import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
+import com.ty.study_with_be.study_group.domain.model.enums.StudyRole;
 import com.ty.study_with_be.study_group.query.dto.MyStudyGroupStatusRes;
 import com.ty.study_with_be.study_group.query.dto.StudyGroupDetailRes;
 import com.ty.study_with_be.study_group.query.dto.StudyGroupListItem;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -24,6 +27,7 @@ import java.util.Set;
 public class StudyGroupQueryService {
 
     private final StudyGroupQueryRepository groupQueryRepository;
+    private final JoinRequestQueryRepository joinRequestQueryRepository;
     private final GroupRepository groupRepository;
 
     public StudyGroupDetailRes getDetail(Long studyGroupId) {
@@ -64,11 +68,16 @@ public class StudyGroupQueryService {
 
     public MyStudyGroupStatusRes getMyStatus(Long groupId, Long memberId) {
 
-        if (groupQueryRepository.existsMember(groupId, memberId)) {
-            return MyStudyGroupStatusRes.joined();
+        // 가입 여부 + 역할 조회
+        Optional<StudyRole> role =
+                groupQueryRepository.findRole(groupId, memberId);
+
+
+        if (role.isPresent()) {
+            return MyStudyGroupStatusRes.joined(role.get());
         }
 
-        if (groupQueryRepository.existsPendingJoin(groupId, memberId)) {
+        if (joinRequestQueryRepository.existsPendingJoin(groupId, memberId)) {
             return MyStudyGroupStatusRes.pending();
         }
 

@@ -41,13 +41,13 @@ public class JoinRequest extends BaseTimeEntity {
     @Column(name = "processed_reason", length = 300)
     private String processedReason;
 
-    public static JoinRequest create(Long group, Long member) {
+    public static JoinRequest create(Long studyGroupId, Long requesterId) {
 
-        JoinRequest r = new JoinRequest();
-        r.studyGroupId = group;
-        r.requesterId = member;
-        r.status = JoinRequestStatus.PENDING;
-        return r;
+        JoinRequest joinRequest = new JoinRequest();
+        joinRequest.studyGroupId = studyGroupId;
+        joinRequest.requesterId = requesterId;
+        joinRequest.status = JoinRequestStatus.PENDING;
+        return joinRequest;
     }
 
     public void approve() {

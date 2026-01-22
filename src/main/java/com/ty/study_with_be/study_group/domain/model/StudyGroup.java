@@ -187,6 +187,14 @@ public class StudyGroup extends BaseTimeEntity {
         }
     }
 
+    public boolean isFull() {
+        return capacity == members.size();
+    }
+
+    public boolean isRecruiting() {
+        return this.recruitStatus.equals(RecruitStatus.RECRUITING);
+    }
+
 //    public void updateBasicInfo() {
 //        this.title = title;
 //        this.category = category;

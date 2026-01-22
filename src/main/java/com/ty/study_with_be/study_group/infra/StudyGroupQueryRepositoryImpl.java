@@ -1,8 +1,8 @@
 package com.ty.study_with_be.study_group.infra;
 
-import com.ty.study_with_be.study_group.domain.model.enums.JoinRequestStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
+import com.ty.study_with_be.study_group.domain.model.enums.StudyRole;
 import com.ty.study_with_be.study_group.query.dto.StudyGroupDetailRes;
 import com.ty.study_with_be.study_group.query.dto.StudyGroupListItem;
 import com.ty.study_with_be.study_group.query.repository.StudyGroupQueryRepository;
@@ -162,6 +162,21 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
 
     }
 
+    @Override
+    public Optional<StudyRole> findRole(Long groupId, Long memberId) {
+        List<StudyRole> result = em.createQuery("""
+            select sm.role
+            from StudyMember sm
+            where sm.studyGroup.studyGroupId = :groupId
+              and sm.member.memberId = :memberId
+        """, StudyRole.class)
+                .setParameter("groupId", groupId)
+                .setParameter("memberId", memberId)
+                .getResultList();
+
+        return result.stream().findFirst();
+    }
+
 
     @Override
     public boolean existsMember(Long studyGroupId, Long memberId) {
@@ -174,24 +189,6 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
         """, Long.class)
                 .setParameter("groupId", studyGroupId)
                 .setParameter("memberId", memberId)
-                .getSingleResult();
-
-        return count > 0;
-    }
-
-    @Override
-    public boolean existsPendingJoin(Long studyGroupId, Long memberId) {
-
-        Long count = em.createQuery("""
-            select count(jr)
-            from JoinRequest jr
-            where jr.studyGroupId = :studyGroupId
-              and jr.requesterId = :memberId
-              and jr.status = :status
-        """, Long.class)
-                .setParameter("studyGroupId", studyGroupId)
-                .setParameter("memberId", memberId)
-                .setParameter("status", JoinRequestStatus.PENDING)
                 .getSingleResult();
 
         return count > 0;

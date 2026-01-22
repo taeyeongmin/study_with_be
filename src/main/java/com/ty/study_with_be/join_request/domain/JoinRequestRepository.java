@@ -1,5 +1,8 @@
 package com.ty.study_with_be.join_request.domain;
 
+import com.ty.study_with_be.join_request.domain.model.JoinRequest;
+
 public interface JoinRequestRepository {
-    boolean existsPending(Long groupId, Long memberId);
+
+    void save(JoinRequest joinRequest);
 }

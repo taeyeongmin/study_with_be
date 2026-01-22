@@ -97,6 +97,7 @@ public class StudyGroupQueryController {
                     ## 기능 설명
                     - 로그인 사용자의 스터디 그룹 상태를 조회합니다.
                     - NONE/PENDING/JOINED 중 하나를 반환합니다.
+                    - 이미 가입된 상태(JOINED)이면 해당 그룹 내 ROLE 정보도 반환합니다.
                     """
     )
     @Parameter(name = "studyGroupId", description = "스터디 그룹 ID", in = ParameterIn.PATH)
