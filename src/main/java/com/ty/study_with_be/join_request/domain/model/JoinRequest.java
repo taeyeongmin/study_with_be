@@ -1,7 +1,9 @@
 package com.ty.study_with_be.join_request.domain.model;
 
 import com.ty.study_with_be.global.entity.BaseTimeEntity;
-import com.ty.study_with_be.study_group.domain.model.enums.JoinRequestStatus;
+import com.ty.study_with_be.global.error.ErrorCode;
+import com.ty.study_with_be.global.exception.DomainException;
+import com.ty.study_with_be.join_request.domain.model.enums.JoinRequestStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -35,6 +37,9 @@ public class JoinRequest extends BaseTimeEntity {
     @Column(name = "status", nullable = false, length = 10)
     private JoinRequestStatus status;
 
+    @Column(name = "processed_by_member_id")
+    private Long processedByMemberId;
+
     @Column(name = "processed_at")
     private LocalDateTime processedAt;
 
@@ -50,23 +55,22 @@ public class JoinRequest extends BaseTimeEntity {
         return joinRequest;
     }
 
-    public void approve() {
-        if (this.status != JoinRequestStatus.PENDING) throw new IllegalStateException("대기 상태만 승인할 수 있습니다.");
-        // 승인 시점 검증: RECRUITING / RECRUIT_END 만 승인 가능
-//        if (!(studyGroup.getStatus() == StudyStatus.RECRUITING
-//           || studyGroup.getStatus() == StudyStatus.RECRUIT_END)) {
-//            throw new IllegalStateException("모집중/마감 상태가 아니면 승인할 수 없습니다.");
-//        }
-//        studyGroup.increaseMemberCount();
+    public void approve(Long processorId) {
+        validPending();
         this.status = JoinRequestStatus.APPROVED;
+        this.processedByMemberId = processorId;
         this.processedAt = java.time.LocalDateTime.now();
     }
 
-    public void reject(String reason) {
-        if (this.status != JoinRequestStatus.PENDING) throw new IllegalStateException("대기 상태만 거부할 수 있습니다.");
+    public void reject(Long processorId) {
+        validPending();
         this.status = JoinRequestStatus.REJECTED;
-        this.processedReason = reason;
+        this.processedByMemberId = processorId;
         this.processedAt = java.time.LocalDateTime.now();
+    }
+
+    private void validPending(){
+        if (this.status != JoinRequestStatus.PENDING) throw new DomainException(ErrorCode.REQUEST_NOT_PENDING);
     }
 
     public void cancel() {

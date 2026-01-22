@@ -1,16 +1,15 @@
 package com.ty.study_with_be.study_group.applicaiton.query;
 
-import com.ty.study_with_be.join_request.query.repository.JoinRequestQueryRepository;
+import com.ty.study_with_be.join_request.application.query.JoinRequestQueryRepository;
 import com.ty.study_with_be.study_group.domain.GroupRepository;
 import com.ty.study_with_be.study_group.domain.model.StudyGroup;
 import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyRole;
-import com.ty.study_with_be.study_group.query.dto.MyStudyGroupStatusRes;
-import com.ty.study_with_be.study_group.query.dto.StudyGroupDetailRes;
-import com.ty.study_with_be.study_group.query.dto.StudyGroupListItem;
-import com.ty.study_with_be.study_group.query.dto.StudyGroupListRes;
-import com.ty.study_with_be.study_group.query.repository.StudyGroupQueryRepository;
+import com.ty.study_with_be.study_group.presentation.query.dto.MyStudyGroupStatusRes;
+import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupDetailRes;
+import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupListItem;
+import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupListRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

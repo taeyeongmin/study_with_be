@@ -6,6 +6,7 @@ import com.ty.study_with_be.study_group.applicaiton.command.CreateGroupUseCase;
 import com.ty.study_with_be.study_group.domain.GroupCreatePolicy;
 import com.ty.study_with_be.study_group.domain.GroupRepository;
 import com.ty.study_with_be.study_group.domain.model.StudyGroup;
+import com.ty.study_with_be.study_group.domain.model.StudyMember;
 import com.ty.study_with_be.study_group.presentation.command.dto.StudyGroupReq;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,9 +27,6 @@ public class CreateGroupService implements CreateGroupUseCase {
         // 그룹 생성 규칙 검증
         groupCreatePolicy.valid(memberId, studyGroupReq.getTitle());
 
-        // 회원 Entity 조회
-        Member member = memberRepository.findByMemberId(memberId);
-
         // 그룹 Entity생성
         StudyGroup studyGroup = StudyGroup.create(
                 studyGroupReq.getTitle()
@@ -41,7 +39,6 @@ public class CreateGroupService implements CreateGroupUseCase {
                 , studyGroupReq.getApplyDeadlineAt()
                 , studyGroupReq.getSchedules()
                 , memberId
-                , member
         );
 
         // DB 저장

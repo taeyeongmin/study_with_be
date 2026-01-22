@@ -3,9 +3,9 @@ package com.ty.study_with_be.study_group.presentation.query;
 import com.ty.study_with_be.study_group.applicaiton.query.StudyGroupQueryService;
 import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
-import com.ty.study_with_be.study_group.query.dto.MyStudyGroupStatusRes;
-import com.ty.study_with_be.study_group.query.dto.StudyGroupDetailRes;
-import com.ty.study_with_be.study_group.query.dto.StudyGroupListRes;
+import com.ty.study_with_be.study_group.presentation.query.dto.MyStudyGroupStatusRes;
+import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupDetailRes;
+import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupListRes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/study_group")
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "스터디 그룹", description = "스터디 그룹 조회 API")
+@Tag(name = "스터디 그룹")
 public class StudyGroupQueryController {
 
     private final StudyGroupQueryService queryService;
@@ -33,8 +33,8 @@ public class StudyGroupQueryController {
             summary = "스터디 그룹 목록 조회",
             description = """
                     ## 기능 설명
-                    - 필터 조건(카테고리/주제/지역/모드/모집상태)으로 목록을 조회합니다.
-                    - 페이징 파라미터(page, size)를 지원합니다.
+                    - 필터 조건(카테고리/주제/지역/모드/모집상태)으로 목록을 조회.
+                    - 페이징 파라미터(page, size)를 지원.
                     ---
                     ## 파라미터 설명
                     - category: 카테고리 코드

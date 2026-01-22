@@ -5,6 +5,8 @@ import com.ty.study_with_be.join_request.domain.model.JoinRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 @RequiredArgsConstructor
 public class JoinRequestRepositoryImpl implements JoinRequestRepository {
@@ -14,5 +16,11 @@ public class JoinRequestRepositoryImpl implements JoinRequestRepository {
     @Override
     public void save(JoinRequest joinRequest) {
         jpaRepository.save(joinRequest);
+    }
+
+    @Override
+    public Optional<JoinRequest> findById(Long requestId) {
+
+        return jpaRepository.findById(requestId);
     }
 }

@@ -32,7 +32,6 @@ class StudyGroupTest {
                 , null
                 , null
                 , 1L
-                , member
         );
     }
 
@@ -52,7 +51,6 @@ class StudyGroupTest {
                     , null
                     , null
                     , 1L
-                    , member
             );
         });
 
@@ -75,7 +73,6 @@ class StudyGroupTest {
                     , null
                     , null
                     , 1L
-                    , member
             );
         });
 
@@ -98,7 +95,6 @@ class StudyGroupTest {
                     , null
                     , null
                     , 1L
-                    , member
             );
         });
     }

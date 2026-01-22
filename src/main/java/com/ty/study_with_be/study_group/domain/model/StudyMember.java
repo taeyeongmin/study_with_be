@@ -8,6 +8,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Objects;
+
 @Entity
 @Table(
     name = "study_member",
@@ -27,23 +29,38 @@ public class StudyMember extends BaseTimeEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long studyMemberId;
 
+    @Column(name = "member_id", nullable = false)
+    private Long memberId;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "study_group_id", nullable = false)
     private StudyGroup studyGroup;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 10)
     private StudyRole role;
 
-    public static StudyMember leader(StudyGroup group, Member member) {
+    public boolean hasPermission(){
+        return role == StudyRole.LEADER || role == StudyRole.MANAGER;
+    }
+
+    protected boolean isSameMember(Long memberId) {
+        return memberId.equals(this.memberId);
+    }
+
+    public static StudyMember createLeader(StudyGroup group, Long memberId) {
         StudyMember sm = new StudyMember();
         sm.studyGroup = group;
-        sm.member = member;
+        sm.memberId = memberId;
         sm.role = StudyRole.LEADER;
+        return sm;
+    }
+
+    public static StudyMember createMember(StudyGroup group, Long memberId) {
+        StudyMember sm = new StudyMember();
+        sm.studyGroup = group;
+        sm.memberId = memberId;
+        sm.role = StudyRole.MEMBER;
         return sm;
     }
 
@@ -60,5 +77,16 @@ public class StudyMember extends BaseTimeEntity {
     }
 
     public boolean isLeader() { return this.role == StudyRole.LEADER; }
-    public boolean isManager() { return this.role == StudyRole.MANAGER; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        StudyMember that = (StudyMember) o;
+        return Objects.equals(studyMemberId, that.studyMemberId) && Objects.equals(memberId, that.memberId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(studyMemberId, memberId);
+    }
 }

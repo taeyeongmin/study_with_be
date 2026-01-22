@@ -4,7 +4,6 @@ import com.nimbusds.oauth2.sdk.util.StringUtils;
 import com.ty.study_with_be.global.entity.BaseTimeEntity;
 import com.ty.study_with_be.global.error.ErrorCode;
 import com.ty.study_with_be.global.exception.DomainException;
-import com.ty.study_with_be.member.domain.model.Member;
 import com.ty.study_with_be.study_group.domain.model.enums.OperationStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.SchedulingType;
@@ -111,8 +110,7 @@ public class StudyGroup extends BaseTimeEntity {
             String description,
             LocalDate applyDeadlineAt,
             Set<DayOfWeek> schedules,
-            Long memberId,
-            Member member
+            Long memberId
     ) {
         if (capacity < 2) throw new DomainException(ErrorCode.INVALID_STUDY_CAPACITY);
         if (studyMode == StudyMode.OFFLINE && StringUtils.isBlank(region)) throw new DomainException(ErrorCode.OFFLINE_STUDY_REGION_REQUIRED);
@@ -132,18 +130,36 @@ public class StudyGroup extends BaseTimeEntity {
         group.schedules = schedules;
         group.ownerId = memberId;
 
-        group.addReader(member);
+        group.addReader(memberId);
 
         return group;
     }
 
-    private void addReader(Member member) {
+    private void addReader(Long memberId) {
 
-        if (member == null) throw new DomainException(ErrorCode.STUDY_OWNER_REQUIRED);
+        if (memberId == null) throw new DomainException(ErrorCode.STUDY_OWNER_REQUIRED);
         if (this.members.stream().anyMatch(StudyMember::isLeader)) throw new DomainException(ErrorCode.DUPLICATE_STUDY_OWNER);;
 
-        StudyMember leader = StudyMember.leader(this, member);
+        StudyMember leader = StudyMember.createLeader(this, memberId);
         this.members.add(leader);
+    }
+
+    public void joinMember(Long memberId) {
+
+        if (!isRecruiting()) throw new  DomainException(ErrorCode.NOT_RECRUITING);
+        if (isFull()) throw new  DomainException(ErrorCode.CAPACITY_EXCEEDED);
+
+        StudyMember newMember = StudyMember.createMember(this, memberId);
+
+        if (this.members.contains(newMember)) throw new  DomainException(ErrorCode.ALREADY_JOINED_MEMBER);
+
+        this.members.add(newMember);
+        increaseMemberCount();
+    }
+
+    private void increaseMemberCount(){
+        this.currentCount += 1;
+        if (isFull()) this.recruitStatus =  RecruitStatus.RECRUIT_END;
     }
 
     public void updateInfo(String title, String category, String topic, String region,  StudyMode studyMode, int capacity, String description, LocalDate applyDeadlineAt, Set<DayOfWeek> schedules) {
@@ -188,38 +204,19 @@ public class StudyGroup extends BaseTimeEntity {
     }
 
     public boolean isFull() {
-        return capacity == members.size();
+        return this.capacity == this.currentCount;
     }
 
     public boolean isRecruiting() {
         return this.recruitStatus.equals(RecruitStatus.RECRUITING);
     }
 
-//    public void updateBasicInfo() {
-//        this.title = title;
-//        this.category = category;
-//        this.topic = topic;
-//        this.region = region;
-//        this.studyMode = studyMode;
-//        this.capacity = capacity;
-//        this.description = description;
-//        this.applyDeadlineAt = applyDeadlineAt;
-//        this.schedules = schedules;
-//    }
+    public StudyMember findMember(Long processorId) {
+        return this.members.stream()
+                .filter(member -> member.isSameMember(processorId))
+                .findFirst().orElse(null);
+    }
 
-//    public void increaseMemberCount() {
-//        if (this.currentCount >= this.capacity) {
-//
-//            // 가득 찼다면 RECRUIT_END로 간주
-//            this.status = RecruitStatus.RECRUIT_END;
-//            throw new IllegalStateException("정원이 초과되어 승인할 수 없습니다.");
-//        }
-//        this.currentCount++;
-//        if (this.currentCount == this.capacity) {
-//            this.status = RecruitStatus.RECRUIT_END;
-//        }
-//    }
-//
 //    public void decreaseMemberCount() {
 //        if (this.currentCount <= 1) throw new IllegalStateException("현재 인원 감소 불가");
 //        this.currentCount--;

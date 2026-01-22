@@ -31,9 +31,15 @@ public enum ErrorCode {
     NOT_RECRUITING(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.not_recruiting"),
     NOT_ONLY_OWNER(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.not_only_owner"),
     CAPACITY_EXCEEDED(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.capacity_exceeded"),
+    STUDY_GROUP_NOT_MANAGER(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.not_manager"),
 
     ALREADY_JOINED(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.already_joined"),
+    ALREADY_JOINED_MEMBER(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.already_joined_member"),
     DUPLICATE_REQUEST(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.duplicate_request"),
+    HAS_NOT_PERMISSION(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.has_not_permission"),
+    REQUEST_NOT_PENDING(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.not_pending"),
+    INVALID_REQUEST_PRECESS_STATUS(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.invalid_precess_status"),
+
 
 
 

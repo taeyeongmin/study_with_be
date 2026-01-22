@@ -1,4 +1,4 @@
-package com.ty.study_with_be.study_group.query.dto;
+package com.ty.study_with_be.study_group.presentation.query.dto;
 
 import com.ty.study_with_be.study_group.domain.model.enums.OperationStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
