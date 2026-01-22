@@ -1,4 +1,4 @@
-package com.ty.study_with_be.study_group.domain.model.enums;
+package com.ty.study_with_be.join_request.domain.model.enums;
 
 import lombok.Getter;
 

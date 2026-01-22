@@ -1,8 +1,7 @@
-package com.ty.study_with_be.study_group.infra;
+package com.ty.study_with_be.study_group.infra.command;
 
 import com.ty.study_with_be.study_group.domain.model.StudyGroup;
 import com.ty.study_with_be.study_group.domain.model.enums.OperationStatus;
-import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Collection;

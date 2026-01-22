@@ -1,11 +1,11 @@
-package com.ty.study_with_be.study_group.infra;
+package com.ty.study_with_be.study_group.infra.query;
 
-import com.ty.study_with_be.study_group.domain.model.enums.JoinRequestStatus;
+import com.ty.study_with_be.study_group.applicaiton.query.StudyGroupQueryRepository;
 import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
-import com.ty.study_with_be.study_group.query.dto.StudyGroupDetailRes;
-import com.ty.study_with_be.study_group.query.dto.StudyGroupListItem;
-import com.ty.study_with_be.study_group.query.repository.StudyGroupQueryRepository;
+import com.ty.study_with_be.study_group.domain.model.enums.StudyRole;
+import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupDetailRes;
+import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupListItem;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
     public Optional<StudyGroupDetailRes> findDetail(Long studyGroupId) {
 
         return em.createQuery("""
-            select new com.ty.study_with_be.study_group.query.dto.StudyGroupDetailRes(
+            select new com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupDetailRes(
                 sg.studyGroupId,
                 sg.title,
     
@@ -108,7 +108,7 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
 
         // ---- content query (목록) ----
         String contentJpql = """
-            select new com.ty.study_with_be.study_group.query.dto.StudyGroupListItem(
+            select new com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupListItem(
                 sg.studyGroupId,
                 sg.title,
                 sg.category,
@@ -162,6 +162,39 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
 
     }
 
+    @Override
+    public Optional<StudyRole> findRole(Long groupId, Long memberId) {
+        List<StudyRole> result = em.createQuery("""
+            select sm.role
+            from StudyMember sm
+            where sm.studyGroup.studyGroupId = :groupId
+              and sm.memberId = :memberId
+        """, StudyRole.class)
+                .setParameter("groupId", groupId)
+                .setParameter("memberId", memberId)
+                .getResultList();
+
+        return result.stream().findFirst();
+    }
+
+    @Override
+    public boolean hasManagerRole(Long studyGroupId, Long memberId) {
+
+        Long count = em.createQuery("""
+        select count(sm)
+        from StudyMember sm
+        where sm.studyGroup.studyGroupId = :studyGroupId
+          and sm.memberId = :memberId
+          and sm.role in (:roles)
+    """, Long.class)
+                .setParameter("studyGroupId", studyGroupId)
+                .setParameter("memberId", memberId)
+                .setParameter("roles", List.of(StudyRole.LEADER, StudyRole.MANAGER))
+                .getSingleResult();
+
+        return count > 0;
+    }
+
 
     @Override
     public boolean existsMember(Long studyGroupId, Long memberId) {
@@ -170,28 +203,10 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
             select count(sm)
             from StudyMember sm
             where sm.studyGroup.studyGroupId = :groupId
-              and sm.member.memberId = :memberId
+              and sm.memberId = :memberId
         """, Long.class)
                 .setParameter("groupId", studyGroupId)
                 .setParameter("memberId", memberId)
-                .getSingleResult();
-
-        return count > 0;
-    }
-
-    @Override
-    public boolean existsPendingJoin(Long studyGroupId, Long memberId) {
-
-        Long count = em.createQuery("""
-            select count(jr)
-            from JoinRequest jr
-            where jr.studyGroupId = :studyGroupId
-              and jr.requesterId = :memberId
-              and jr.status = :status
-        """, Long.class)
-                .setParameter("studyGroupId", studyGroupId)
-                .setParameter("memberId", memberId)
-                .setParameter("status", JoinRequestStatus.PENDING)
                 .getSingleResult();
 
         return count > 0;

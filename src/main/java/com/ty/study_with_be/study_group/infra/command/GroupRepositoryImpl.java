@@ -1,4 +1,4 @@
-package com.ty.study_with_be.study_group.infra;
+package com.ty.study_with_be.study_group.infra.command;
 
 import com.ty.study_with_be.study_group.domain.GroupRepository;
 import com.ty.study_with_be.study_group.domain.model.StudyGroup;

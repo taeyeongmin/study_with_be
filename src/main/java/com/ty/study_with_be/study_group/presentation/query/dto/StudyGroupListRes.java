@@ -1,4 +1,4 @@
-package com.ty.study_with_be.study_group.query.dto;
+package com.ty.study_with_be.study_group.presentation.query.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,9 +1,11 @@
 package com.ty.study_with_be.join_request.infra;
 
 import com.ty.study_with_be.join_request.domain.JoinRequestRepository;
-import com.ty.study_with_be.study_group.domain.model.enums.JoinRequestStatus;
+import com.ty.study_with_be.join_request.domain.model.JoinRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -12,12 +14,13 @@ public class JoinRequestRepositoryImpl implements JoinRequestRepository {
     private final JoinRequestJpaRepository jpaRepository;
 
     @Override
-    public boolean existsPending(Long groupId, Long memberId) {
+    public void save(JoinRequest joinRequest) {
+        jpaRepository.save(joinRequest);
+    }
 
-        return jpaRepository.existsByStudyGroupIdAndRequesterIdAndStatus(
-                groupId,
-                memberId,
-                JoinRequestStatus.PENDING
-        );
+    @Override
+    public Optional<JoinRequest> findById(Long requestId) {
+
+        return jpaRepository.findById(requestId);
     }
 }
