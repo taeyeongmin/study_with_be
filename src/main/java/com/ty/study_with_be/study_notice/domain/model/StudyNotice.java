@@ -47,17 +47,15 @@ public class StudyNotice extends BaseTimeEntity {
         studyNotice.updatedId = writerId;
         studyNotice.title = title;
         studyNotice.content = content;
-        studyNotice.setPinned(pinned);
+        studyNotice.pinned = pinned;
         return studyNotice;
     }
 
-    public void update(String title, String content, Long updatedId) {
+    public void update(String title, String content, Long updatedId, boolean pinned) {
         this.title = title;
         this.content = content;
         this.updatedId = updatedId;
-    }
-
-    public void setPinned(boolean pinned) {
         this.pinned = pinned;
     }
+
 }

@@ -33,6 +33,8 @@ public enum ErrorCode {
     NOT_ONLY_OWNER(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.not_only_owner"),
     CAPACITY_EXCEEDED(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.capacity_exceeded"),
     STUDY_GROUP_NOT_MANAGER(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.not_manager"),
+    OWNER_CANNOT_LEAVE(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.owner_cannot_leave"),
+    CLOSE_STUDY_CANNOT_LEAVE(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.close_study_cannot_leave"),
 
     ALREADY_JOINED(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.already_joined"),
     ALREADY_JOINED_MEMBER(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.already_joined_member"),

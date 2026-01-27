@@ -1,8 +1,9 @@
-package com.ty.study_with_be.study_notice.application.command;
+package com.ty.study_with_be.study_notice.application.command.service;
 
 import com.ty.study_with_be.global.error.ErrorCode;
 import com.ty.study_with_be.global.exception.DomainException;
 import com.ty.study_with_be.study_group.applicaiton.query.StudyGroupQueryRepository;
+import com.ty.study_with_be.study_notice.application.command.StudyNoticeCreateUseCase;
 import com.ty.study_with_be.study_notice.domain.StudyNoticeRepository;
 import com.ty.study_with_be.study_notice.domain.model.StudyNotice;
 import com.ty.study_with_be.study_notice.presentation.command.dto.StudyNoticeSaveReq;

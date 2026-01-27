@@ -6,6 +6,8 @@ import com.ty.study_with_be.study_notice.infra.StudyNoticeJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 @RequiredArgsConstructor
 public class StudyNoticeRepositoryImpl implements StudyNoticeRepository {
@@ -16,5 +18,17 @@ public class StudyNoticeRepositoryImpl implements StudyNoticeRepository {
     public void save(StudyNotice studyNotice) {
 
         studyNoticeJpaRepository.save(studyNotice);
+    }
+
+    @Override
+    public Optional<StudyNotice> findById(Long noticeId) {
+
+        return studyNoticeJpaRepository.findById(noticeId);
+    }
+
+    @Override
+    public void delete(StudyNotice studyNotice) {
+
+        studyNoticeJpaRepository.delete(studyNotice);
     }
 }
