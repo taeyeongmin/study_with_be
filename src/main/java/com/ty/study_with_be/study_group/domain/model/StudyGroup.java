@@ -251,6 +251,11 @@ public class StudyGroup extends BaseTimeEntity {
         this.currentCount--;
         // 인원이 빠지면 다시 모집중 전환 가능한 정책(방장 전환) - 여기선 자동 전환 안함
     }
+
+    public void expelMember(Long targetMemberId) {
+        if (this.operationStatus == OperationStatus.CLOSED) throw new DomainException(ErrorCode.CLOSE_STUDY_CANNOT_LEAVE);
+        this.currentCount--;
+    }
 //
 //    public void validateAccessible() {
 //        if (this.status == RecruitStatus.SUSPENDED) {

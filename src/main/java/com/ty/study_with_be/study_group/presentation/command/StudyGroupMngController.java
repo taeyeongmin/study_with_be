@@ -1,9 +1,6 @@
 package com.ty.study_with_be.study_group.presentation.command;
 
-import com.ty.study_with_be.study_group.applicaiton.command.CreateGroupUseCase;
-import com.ty.study_with_be.study_group.applicaiton.command.DeleteGroupUseCase;
-import com.ty.study_with_be.study_group.applicaiton.command.LeaveGroupUseCase;
-import com.ty.study_with_be.study_group.applicaiton.command.UpdateGroupUseCase;
+import com.ty.study_with_be.study_group.applicaiton.command.*;
 import com.ty.study_with_be.study_group.presentation.command.dto.StudyGroupOperationInfoUpdateReq;
 import com.ty.study_with_be.study_group.presentation.command.dto.StudyGroupReq;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,6 +23,8 @@ public class StudyGroupMngController {
     private final UpdateGroupUseCase updateGroupUseCase;
     private final DeleteGroupUseCase deleteGroupUseCase;
     private final LeaveGroupUseCase leaveGroupUseCase;
+    private final ExpelMemberUseCase expelMemberUseCase;
+
 
     @PreAuthorize("isAuthenticated()")
     @Operation(
@@ -140,6 +139,28 @@ public class StudyGroupMngController {
             , @AuthenticationPrincipal User principal
     ) {
         leaveGroupUseCase.leaveGroup(studyGroupId, Long.valueOf(principal.getUsername()));
+
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{studyGroupId}/remove/{memberId}")
+    @Operation(
+            summary = "스터디그룹 강제 탈퇴",
+            description = """
+                    ## 기능 설명
+                    - `스터디그룹을 탈퇴한다.`
+                    ---
+                    ## 상세 설명
+                    - **방장은 탈퇴 불가.
+                    - **종료 된 그룹에 대해서는 탈퇴 불가.**
+                    """
+    )
+    public ResponseEntity expelMember(
+            @PathVariable Long studyGroupId
+            , @PathVariable Long memberId
+            , @AuthenticationPrincipal User principal
+    ) {
+        expelMemberUseCase.expelMember(studyGroupId, memberId, Long.valueOf(principal.getUsername()));
 
         return ResponseEntity.ok().build();
     }
