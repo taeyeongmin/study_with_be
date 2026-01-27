@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public interface JoinRequestRepository {
 
-    void save(JoinRequest joinRequest);
+    JoinRequest save(JoinRequest joinRequest);
 
     Optional<JoinRequest> findById(Long requestId);
 }

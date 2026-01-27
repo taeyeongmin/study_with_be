@@ -21,7 +21,8 @@ import java.time.LocalDateTime;
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class JoinRequest extends BaseTimeEntity {
+public class
+JoinRequest extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -59,14 +60,14 @@ public class JoinRequest extends BaseTimeEntity {
         validPending();
         this.status = JoinRequestStatus.APPROVED;
         this.processedByMemberId = processorId;
-        this.processedAt = java.time.LocalDateTime.now();
+        this.processedAt = LocalDateTime.now();
     }
 
     public void reject(Long processorId) {
         validPending();
         this.status = JoinRequestStatus.REJECTED;
         this.processedByMemberId = processorId;
-        this.processedAt = java.time.LocalDateTime.now();
+        this.processedAt = LocalDateTime.now();
     }
 
     private void validPending(){
@@ -76,6 +77,7 @@ public class JoinRequest extends BaseTimeEntity {
     public void cancel() {
         if (this.status != JoinRequestStatus.PENDING) throw new IllegalStateException("대기 상태만 취소할 수 있습니다.");
         this.status = JoinRequestStatus.CANCELED;
-        this.processedAt = java.time.LocalDateTime.now();
+        this.processedAt = LocalDateTime.now();
     }
+
 }

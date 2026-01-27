@@ -8,5 +8,5 @@ public interface UpdateGroupUseCase {
 
     void updateAll(StudyGroupReq studyGroupReq, Long memberId, Long groupId);
 
-    void updateOperationInfo(Long studyGroupId, @Valid StudyGroupOperationInfoUpdateReq req);
+    void updateOperationInfo(Long studyGroupId, StudyGroupOperationInfoUpdateReq req, Long memberId);
 }

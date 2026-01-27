@@ -89,9 +89,10 @@ public class StudyGroupMngController {
     )
     public ResponseEntity updateOperationInfo(
             @PathVariable Long studyGroupId,
+            @AuthenticationPrincipal User principal,
             @Valid @RequestBody StudyGroupOperationInfoUpdateReq req
     ) {
-        updateGroupUseCase.updateOperationInfo(studyGroupId, req);
+        updateGroupUseCase.updateOperationInfo(studyGroupId, req, Long.valueOf(principal.getUsername()));
 
         return ResponseEntity.ok().build();
     }

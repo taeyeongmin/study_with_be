@@ -93,12 +93,6 @@ public class StudyGroup extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<StudyMember> members = new HashSet<>();
-//
-//    @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private Set<JoinRequest> joinRequests = new HashSet<>();
-//
-//    @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private Set<Notice> notices = new HashSet<>();
 
     public static StudyGroup create(
             String title,
@@ -144,6 +138,10 @@ public class StudyGroup extends BaseTimeEntity {
         this.members.add(leader);
     }
 
+    private StudyMember getLeader(){
+        return members.stream().filter(StudyMember::isLeader).findFirst().orElse(null);
+    }
+
     public void joinMember(Long memberId) {
 
         if (!isRecruiting()) throw new  DomainException(ErrorCode.NOT_RECRUITING);
@@ -159,10 +157,16 @@ public class StudyGroup extends BaseTimeEntity {
 
     private void increaseMemberCount(){
         this.currentCount += 1;
-        if (isFull()) this.recruitStatus =  RecruitStatus.RECRUIT_END;
+//        if (isFull()) this.recruitStatus =  RecruitStatus.RECRUIT_END;
     }
 
-    public void updateInfo(String title, String category, String topic, String region,  StudyMode studyMode, int capacity, String description, LocalDate applyDeadlineAt, Set<DayOfWeek> schedules) {
+    private boolean checkLeader(Long memberId) {
+        return getLeader().getMemberId().equals(memberId);
+    }
+
+    public void updateInfo(String title, String category, String topic, String region,  StudyMode studyMode, int capacity, String description, LocalDate applyDeadlineAt, Set<DayOfWeek> schedules,Long memberId) {
+
+        if (!checkLeader(memberId)) throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
 
         if (studyMode == StudyMode.OFFLINE && StringUtils.isBlank(region))
             throw new DomainException(ErrorCode.OFFLINE_STUDY_REGION_REQUIRED);;
@@ -178,7 +182,10 @@ public class StudyGroup extends BaseTimeEntity {
         this.schedules = schedules;
     }
 
-    public void updateOperationInfo(int capacity, StudyMode studyMode, SchedulingType schedulingType, Set<DayOfWeek> schedules) {
+    // TODO: 테스트 필요
+    public void updateOperationInfo(int capacity, StudyMode studyMode, SchedulingType schedulingType, Set<DayOfWeek> schedules, Long memberId) {
+
+        if (!checkLeader(memberId)) throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
 
         if (studyMode == StudyMode.OFFLINE && StringUtils.isBlank(region))
             throw new DomainException(ErrorCode.OFFLINE_STUDY_REGION_REQUIRED);

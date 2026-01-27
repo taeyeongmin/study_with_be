@@ -6,15 +6,16 @@ import com.ty.study_with_be.join_request.application.command.ProcessJoinRequestU
 import com.ty.study_with_be.join_request.domain.JoinRequestRepository;
 import com.ty.study_with_be.join_request.domain.model.JoinRequest;
 import com.ty.study_with_be.join_request.domain.model.enums.JoinRequestStatus;
-import com.ty.study_with_be.member.domain.repository.MemberRepository;
 import com.ty.study_with_be.study_group.domain.GroupRepository;
 import com.ty.study_with_be.study_group.domain.model.StudyGroup;
 import com.ty.study_with_be.study_group.domain.model.StudyMember;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProcessJoinRequestService implements ProcessJoinRequestUseCase {
@@ -30,14 +31,22 @@ public class ProcessJoinRequestService implements ProcessJoinRequestUseCase {
             throw new DomainException(ErrorCode.INVALID_REQUEST_PRECESS_STATUS);
 
         // joinRequestEntity 조회
-        JoinRequest joinRequest = joinRequestRepository.findById(requestId).orElseThrow(()->new EntityNotFoundException("해당 요청이 존재하지 않습니다."));
+        JoinRequest joinRequest = joinRequestRepository.findById(requestId).orElseThrow(() -> new EntityNotFoundException("해당 요청이 존재하지 않습니다."));
 
         // URL 조작 방어
         if (!joinRequest.getStudyGroupId().equals(studyGroupId)) throw new RuntimeException("요청 확인 바람");
 
-        // groupEntity 조회
-        StudyGroup studyGroup = groupRepository.findById(studyGroupId).orElseThrow(() -> new EntityNotFoundException("해당 그룹이 존재하지 않습니다."));
+        // groupEntity 조회 (row-level lock)
+        StudyGroup studyGroup = groupRepository.findByIdForUpdate(studyGroupId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 그룹이 존재하지 않습니다."));
+
         StudyMember studyMember = studyGroup.findMember(processorId);
+
+        log.error("[thread={}] time={} currentCount={} capacity={}",
+                Thread.currentThread().getName(),
+                System.currentTimeMillis(),
+                studyGroup.getCurrentCount(),
+                studyGroup.getCapacity());
 
         if (!studyMember.hasPermission())
             throw new DomainException(ErrorCode.HAS_NOT_PERMISSION);
@@ -48,8 +57,6 @@ public class ProcessJoinRequestService implements ProcessJoinRequestUseCase {
         } else {
             joinRequest.reject(processorId);
         }
-
-        System.out.println(" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ");
     }
 
 }
