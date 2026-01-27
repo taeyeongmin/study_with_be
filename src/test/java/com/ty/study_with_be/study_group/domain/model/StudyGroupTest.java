@@ -114,6 +114,7 @@ class StudyGroupTest {
                     , "ㅇㅇ"
                     , null
                     , null
+                    , 1L
             );
         });
 
@@ -133,6 +134,7 @@ class StudyGroupTest {
                 , "new description"
                 , null
                 , null
+                , 1L
         ));
 
         assertEquals("new title", samplestudyGroup.getTitle());

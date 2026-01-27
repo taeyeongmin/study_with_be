@@ -16,5 +16,7 @@ public interface GroupRepository {
 
     Optional<StudyGroup> findById(Long studyGroupId);
 
+    Optional<StudyGroup> findByIdForUpdate(Long studyGroupId);
+
     void delete(StudyGroup studyGroup);
 }

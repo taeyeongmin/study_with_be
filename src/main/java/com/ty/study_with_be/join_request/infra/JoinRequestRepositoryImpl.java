@@ -14,8 +14,8 @@ public class JoinRequestRepositoryImpl implements JoinRequestRepository {
     private final JoinRequestJpaRepository jpaRepository;
 
     @Override
-    public void save(JoinRequest joinRequest) {
-        jpaRepository.save(joinRequest);
+    public JoinRequest save(JoinRequest joinRequest) {
+        return jpaRepository.save(joinRequest);
     }
 
     @Override

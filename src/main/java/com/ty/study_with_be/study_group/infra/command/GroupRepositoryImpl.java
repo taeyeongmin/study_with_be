@@ -4,6 +4,7 @@ import com.ty.study_with_be.study_group.domain.GroupRepository;
 import com.ty.study_with_be.study_group.domain.model.StudyGroup;
 import com.ty.study_with_be.study_group.domain.model.enums.OperationStatus;
 import lombok.RequiredArgsConstructor;
+import org.aspectj.lang.annotation.AfterThrowing;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -47,6 +48,11 @@ public class GroupRepositoryImpl implements GroupRepository {
     @Override
     public Optional<StudyGroup> findById(Long studyGroupId) {
         return groupJpaRepository.findById(studyGroupId);
+    }
+
+    @Override
+    public Optional<StudyGroup> findByIdForUpdate(Long studyGroupId) {
+        return groupJpaRepository.findByStudyGroupIdForUpdate(studyGroupId);
     }
 
     @Override

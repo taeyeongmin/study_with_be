@@ -93,12 +93,6 @@ public class StudyGroup extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<StudyMember> members = new HashSet<>();
-//
-//    @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private Set<JoinRequest> joinRequests = new HashSet<>();
-//
-//    @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private Set<Notice> notices = new HashSet<>();
 
     public static StudyGroup create(
             String title,
@@ -144,6 +138,10 @@ public class StudyGroup extends BaseTimeEntity {
         this.members.add(leader);
     }
 
+    private StudyMember getLeader(){
+        return members.stream().filter(StudyMember::isLeader).findFirst().orElse(null);
+    }
+
     public void joinMember(Long memberId) {
 
         if (!isRecruiting()) throw new  DomainException(ErrorCode.NOT_RECRUITING);
@@ -159,10 +157,16 @@ public class StudyGroup extends BaseTimeEntity {
 
     private void increaseMemberCount(){
         this.currentCount += 1;
-        if (isFull()) this.recruitStatus =  RecruitStatus.RECRUIT_END;
+//        if (isFull()) this.recruitStatus =  RecruitStatus.RECRUIT_END;
     }
 
-    public void updateInfo(String title, String category, String topic, String region,  StudyMode studyMode, int capacity, String description, LocalDate applyDeadlineAt, Set<DayOfWeek> schedules) {
+    private boolean checkLeader(Long memberId) {
+        return getLeader().getMemberId().equals(memberId);
+    }
+
+    public void updateInfo(String title, String category, String topic, String region,  StudyMode studyMode, int capacity, String description, LocalDate applyDeadlineAt, Set<DayOfWeek> schedules,Long memberId) {
+
+        if (!checkLeader(memberId)) throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
 
         if (studyMode == StudyMode.OFFLINE && StringUtils.isBlank(region))
             throw new DomainException(ErrorCode.OFFLINE_STUDY_REGION_REQUIRED);;
@@ -178,7 +182,10 @@ public class StudyGroup extends BaseTimeEntity {
         this.schedules = schedules;
     }
 
-    public void updateOperationInfo(int capacity, StudyMode studyMode, SchedulingType schedulingType, Set<DayOfWeek> schedules) {
+    // TODO: 테스트 필요
+    public void updateOperationInfo(int capacity, StudyMode studyMode, SchedulingType schedulingType, Set<DayOfWeek> schedules, Long memberId) {
+
+        if (!checkLeader(memberId)) throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
 
         if (studyMode == StudyMode.OFFLINE && StringUtils.isBlank(region))
             throw new DomainException(ErrorCode.OFFLINE_STUDY_REGION_REQUIRED);
@@ -211,17 +218,39 @@ public class StudyGroup extends BaseTimeEntity {
         return this.recruitStatus.equals(RecruitStatus.RECRUITING);
     }
 
-    public StudyMember findMember(Long processorId) {
+    public StudyMember findMember(Long memberId) {
         return this.members.stream()
-                .filter(member -> member.isSameMember(processorId))
+                .filter(member -> member.isSameMember(memberId))
                 .findFirst().orElse(null);
     }
 
-//    public void decreaseMemberCount() {
-//        if (this.currentCount <= 1) throw new IllegalStateException("현재 인원 감소 불가");
-//        this.currentCount--;
-//        // 인원이 빠지면 다시 모집중 전환 가능한 정책(방장 전환) - 여기선 자동 전환 안함
-//    }
+    public void leave(Long memberId) {
+
+        // StudyMember 조회
+        StudyMember member = findMember(memberId);
+        // 검증
+        validLeave(member);
+
+        // members에서 제거
+        removeMember(member);
+    }
+
+    private void removeMember(StudyMember member) {
+        this.members.remove(member);
+        decreaseMemberCount();
+    }
+
+    private void validLeave(StudyMember member) {
+
+        if (member.isLeader()) throw new DomainException(ErrorCode.OWNER_CANNOT_LEAVE);
+        if (this.operationStatus == OperationStatus.CLOSED) throw new DomainException(ErrorCode.CLOSE_STUDY_CANNOT_LEAVE);
+    }
+
+    public void decreaseMemberCount() {
+        if (this.currentCount <= 1) throw new IllegalStateException("현재 인원 감소 불가");
+        this.currentCount--;
+        // 인원이 빠지면 다시 모집중 전환 가능한 정책(방장 전환) - 여기선 자동 전환 안함
+    }
 //
 //    public void validateAccessible() {
 //        if (this.status == RecruitStatus.SUSPENDED) {

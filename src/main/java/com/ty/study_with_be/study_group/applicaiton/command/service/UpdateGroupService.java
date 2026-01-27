@@ -38,6 +38,7 @@ public class UpdateGroupService implements UpdateGroupUseCase {
                 , studyGroupReq.getDescription()
                 , studyGroupReq.getApplyDeadlineAt()
                 , studyGroupReq.getSchedules()
+                , memberId
         );
 
         // DB 저장
@@ -45,13 +46,13 @@ public class UpdateGroupService implements UpdateGroupUseCase {
     }
 
     @Override
-    public void updateOperationInfo(Long studyGroupId, StudyGroupOperationInfoUpdateReq req) {
+    public void updateOperationInfo(Long studyGroupId, StudyGroupOperationInfoUpdateReq req, Long memberId) {
 
         // 기존 Group 정보 조회
         StudyGroup studyGroup = groupRepository.findById(studyGroupId).orElseThrow(() -> new RuntimeException("해당 그룹이 없습니다."));
 
         // 값 변경
-        studyGroup.updateOperationInfo(req.getCapacity(), req.getStudyMode(), req.getSchedulingType(), req.getSchedules());
+        studyGroup.updateOperationInfo(req.getCapacity(), req.getStudyMode(), req.getSchedulingType(), req.getSchedules(),memberId);
 
         // DB 저장
         groupRepository.save(studyGroup);
