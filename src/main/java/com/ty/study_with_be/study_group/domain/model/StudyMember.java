@@ -41,12 +41,16 @@ public class StudyMember extends BaseTimeEntity {
     @Column(name = "role", nullable = false, length = 10)
     private StudyRole role;
 
-    public boolean hasPermission(){
+    public boolean hasManageRole(){
         return role == StudyRole.LEADER || role == StudyRole.MANAGER;
     }
 
-    protected boolean isSameMember(Long memberId) {
+    protected boolean isSameMemberByMemberId(Long memberId) {
         return memberId.equals(this.memberId);
+    }
+
+    protected boolean isSameMemberByStudyMemberId(Long studyMemberId) {
+        return studyMemberId.equals(this.studyMemberId);
     }
 
     public static StudyMember createLeader(StudyGroup group, Long memberId) {
@@ -89,5 +93,13 @@ public class StudyMember extends BaseTimeEntity {
     @Override
     public int hashCode() {
         return Objects.hash(studyMemberId, memberId);
+    }
+
+    public boolean canKick(StudyMember targetMember) {
+
+        if (this.memberId.equals(targetMember.memberId))
+            return false;
+
+        return this.role.canKick(targetMember.role);
     }
 }

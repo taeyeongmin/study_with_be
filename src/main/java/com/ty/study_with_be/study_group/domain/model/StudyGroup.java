@@ -218,26 +218,34 @@ public class StudyGroup extends BaseTimeEntity {
         return this.recruitStatus.equals(RecruitStatus.RECRUITING);
     }
 
-    public StudyMember findMember(Long memberId) {
+    public StudyMember findStudyMemberByStudyMemberId(Long studyMemberId) {
         return this.members.stream()
-                .filter(member -> member.isSameMember(memberId))
+                .filter(member -> member.isSameMemberByStudyMemberId(studyMemberId))
+                .findFirst().orElse(null);
+    }
+
+    public StudyMember findStudyMemberByMemberId(Long memberId) {
+        return this.members.stream()
+                .filter(member -> member.isSameMemberByMemberId(memberId))
                 .findFirst().orElse(null);
     }
 
     public void leave(Long memberId) {
 
         // StudyMember 조회
-        StudyMember member = findMember(memberId);
+        StudyMember member = findStudyMemberByMemberId(memberId);
         // 검증
         validLeave(member);
-
         // members에서 제거
         removeMember(member);
     }
 
     private void removeMember(StudyMember member) {
+
         this.members.remove(member);
-        decreaseMemberCount();
+        if (this.currentCount <= 1) throw new IllegalStateException("현재 인원 감소 불가");
+        this.currentCount--;
+        // 인원이 빠지면 다시 모집중 전환 가능한 정책(방장 전환) - 여기선 자동 전환 안함
     }
 
     private void validLeave(StudyMember member) {
@@ -246,16 +254,27 @@ public class StudyGroup extends BaseTimeEntity {
         if (this.operationStatus == OperationStatus.CLOSED) throw new DomainException(ErrorCode.CLOSE_STUDY_CANNOT_LEAVE);
     }
 
-    public void decreaseMemberCount() {
-        if (this.currentCount <= 1) throw new IllegalStateException("현재 인원 감소 불가");
-        this.currentCount--;
-        // 인원이 빠지면 다시 모집중 전환 가능한 정책(방장 전환) - 여기선 자동 전환 안함
+    public void expelMember(Long targetMemberId, long currentMemberId) {
+        
+        // 현재 유저와 강퇴 대상 유저 조회
+        StudyMember currentMember = findStudyMemberByMemberId(currentMemberId);
+        StudyMember targetMember = findStudyMemberByStudyMemberId(targetMemberId);
+
+        // 규칙 검증
+        validExpelMember(targetMember, currentMember);
+
+        removeMember(targetMember);
     }
 
-    public void expelMember(Long targetMemberId) {
+    private void validExpelMember(StudyMember  targetMember, StudyMember currentMember) {
+
+        // 권한에 대한 검증
+        if (!currentMember.canKick(targetMember)) throw new DomainException(ErrorCode.HAS_NOT_PERMISSION);
+
+        // 스터디 상태 검증
         if (this.operationStatus == OperationStatus.CLOSED) throw new DomainException(ErrorCode.CLOSE_STUDY_CANNOT_LEAVE);
-        this.currentCount--;
     }
+
 //
 //    public void validateAccessible() {
 //        if (this.status == RecruitStatus.SUSPENDED) {

@@ -5,8 +5,8 @@ public enum StudyRole {
     LEADER {
         @Override
         public boolean canKick(StudyRole targetRole) {
-            // 방장은 방장을 강퇴할 수 없다 (자기 자신 강퇴는 별도 체크)
-            return targetRole != LEADER;
+            // 방장은 모두 강퇴 가능
+            return true;
         }
     },
     MANAGER {

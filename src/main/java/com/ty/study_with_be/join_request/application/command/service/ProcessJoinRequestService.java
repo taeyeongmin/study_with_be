@@ -40,15 +40,9 @@ public class ProcessJoinRequestService implements ProcessJoinRequestUseCase {
         StudyGroup studyGroup = groupRepository.findByIdForUpdate(studyGroupId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 그룹이 존재하지 않습니다."));
 
-        StudyMember studyMember = studyGroup.findMember(processorId);
+        StudyMember studyMember = studyGroup.findStudyMemberByMemberId(processorId);
 
-        log.error("[thread={}] time={} currentCount={} capacity={}",
-                Thread.currentThread().getName(),
-                System.currentTimeMillis(),
-                studyGroup.getCurrentCount(),
-                studyGroup.getCapacity());
-
-        if (!studyMember.hasPermission())
+        if (!studyMember.hasManageRole())
             throw new DomainException(ErrorCode.HAS_NOT_PERMISSION);
 
         if (status == JoinRequestStatus.APPROVED) {

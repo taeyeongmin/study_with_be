@@ -39,7 +39,7 @@ public enum ErrorCode {
     ALREADY_JOINED(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.already_joined"),
     ALREADY_JOINED_MEMBER(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.already_joined_member"),
     DUPLICATE_REQUEST(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.duplicate_request"),
-    HAS_NOT_PERMISSION(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.has_not_permission"),
+    HAS_NOT_PERMISSION(HttpStatus.FORBIDDEN, "error.join_request.has_not_permission"),
     REQUEST_NOT_PENDING(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.not_pending"),
     INVALID_REQUEST_PRECESS_STATUS(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.invalid_precess_status"),
 

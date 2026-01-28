@@ -12,6 +12,7 @@ public class MyStudyGroupStatusRes {
 
     private final MyStudyGroupStatus status;
     private final StudyRole studyRole;
+//    private final boolean hasManageRole;
 
     public static MyStudyGroupStatusRes none() {
         return new MyStudyGroupStatusRes(
