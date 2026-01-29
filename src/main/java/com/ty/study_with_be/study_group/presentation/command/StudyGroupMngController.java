@@ -3,6 +3,7 @@ package com.ty.study_with_be.study_group.presentation.command;
 import com.ty.study_with_be.study_group.applicaiton.command.*;
 import com.ty.study_with_be.study_group.presentation.command.dto.StudyGroupOperationInfoUpdateReq;
 import com.ty.study_with_be.study_group.presentation.command.dto.StudyGroupReq;
+import com.ty.study_with_be.study_group.presentation.command.dto.StudyMemberRoleChangeReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -24,6 +25,7 @@ public class StudyGroupMngController {
     private final DeleteGroupUseCase deleteGroupUseCase;
     private final LeaveGroupUseCase leaveGroupUseCase;
     private final ExpelMemberUseCase expelMemberUseCase;
+    private final ChangeStudyMemberRoleUseCase changeStudyMemberRoleUseCase;
 
 
     @PreAuthorize("isAuthenticated()")
@@ -163,6 +165,31 @@ public class StudyGroupMngController {
             , @AuthenticationPrincipal User principal
     ) {
         expelMemberUseCase.expelMember(studyGroupId, memberId, Long.valueOf(principal.getUsername()));
+
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(
+            summary = "스터디그룹 멤버 역할 변경",
+            description = """
+                    ## 기능 설명
+                    - `스터디그룹 멤버의 역할을 변경한다.`
+                    ---
+                    ## 상세 설명
+                    - **방장만 할 수 있다.
+                    - **해당 그룹에 속한 멤버에 대해 변경.
+                    - **종료 상태인 그룹에 대해선 불가능.
+                    """
+    )
+    @PreAuthorize("isAuthenticated()")
+    @PatchMapping("/{studyGroupId}/members/{memberId}/role")
+    public ResponseEntity<Void> changeMemberRole(
+            @PathVariable Long studyGroupId
+            , @PathVariable Long memberId
+            , @AuthenticationPrincipal User principal
+            , @RequestBody StudyMemberRoleChangeReq req
+    ){
+        changeStudyMemberRoleUseCase.change(studyGroupId,memberId,Long.valueOf(principal.getUsername()),req.getRole());
 
         return ResponseEntity.ok().build();
     }

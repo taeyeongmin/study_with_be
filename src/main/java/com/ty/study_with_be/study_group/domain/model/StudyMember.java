@@ -67,16 +67,9 @@ public class StudyMember extends BaseTimeEntity {
         return sm;
     }
 
-    public void promoteToManager() {
-        if (this.role == StudyRole.LEADER) return; // 리더는 그대로
-        this.role = StudyRole.MANAGER;
-    }
+    protected void changeRole(StudyRole role) {
 
-    public void demoteToMember() {
-        if (this.role == StudyRole.LEADER) {
-            throw new IllegalStateException("방장은 MEMBER로 변경할 수 없습니다.");
-        }
-        this.role = StudyRole.MEMBER;
+        this.role = role;
     }
 
     public boolean isLeader() { return this.role == StudyRole.LEADER; }

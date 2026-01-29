@@ -4,10 +4,7 @@ import com.nimbusds.oauth2.sdk.util.StringUtils;
 import com.ty.study_with_be.global.entity.BaseTimeEntity;
 import com.ty.study_with_be.global.error.ErrorCode;
 import com.ty.study_with_be.global.exception.DomainException;
-import com.ty.study_with_be.study_group.domain.model.enums.OperationStatus;
-import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
-import com.ty.study_with_be.study_group.domain.model.enums.SchedulingType;
-import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
+import com.ty.study_with_be.study_group.domain.model.enums.*;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -171,13 +168,13 @@ public class StudyGroup extends BaseTimeEntity {
         // if (isFull()) this.recruitStatus =  RecruitStatus.RECRUIT_END;
     }
 
-    private boolean checkLeader(Long memberId) {
+    private boolean isLeader(Long memberId) {
         return getLeader().getMemberId().equals(memberId);
     }
 
     public void updateInfo(String title, String category, String topic, String region,  StudyMode studyMode, int capacity, String description, LocalDate applyDeadlineAt, Set<DayOfWeek> schedules,Long memberId) {
 
-        if (!checkLeader(memberId)) throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
+        if (!isLeader(memberId)) throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
 
         if (studyMode == StudyMode.OFFLINE && StringUtils.isBlank(region))
             throw new DomainException(ErrorCode.OFFLINE_STUDY_REGION_REQUIRED);;
@@ -196,7 +193,7 @@ public class StudyGroup extends BaseTimeEntity {
     // TODO: 테스트 필요
     public void updateOperationInfo(int capacity, StudyMode studyMode, SchedulingType schedulingType, Set<DayOfWeek> schedules, Long memberId) {
 
-        if (!checkLeader(memberId)) throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
+        if (!isLeader(memberId)) throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
 
         if (studyMode == StudyMode.OFFLINE && StringUtils.isBlank(region))
             throw new DomainException(ErrorCode.OFFLINE_STUDY_REGION_REQUIRED);
@@ -230,16 +227,17 @@ public class StudyGroup extends BaseTimeEntity {
     }
 
     public StudyMember findStudyMemberByStudyMemberId(Long studyMemberId) {
+        
         return this.members.stream()
                 .filter(member -> member.isSameMemberByStudyMemberId(studyMemberId))
-                .findFirst().orElse(null);
+                .findFirst().orElseThrow(()-> new DomainException(ErrorCode.NOT_GROUP_MEMBER));
     }
 
     public StudyMember findStudyMemberByMemberId(Long memberId) {
 
         return this.members.stream()
                 .filter(member -> member.isSameMemberByMemberId(memberId))
-                .findFirst().orElse(null);
+                .findFirst().orElseThrow(()-> new DomainException(ErrorCode.NOT_GROUP_MEMBER));
     }
 
     public void leave(Long memberId) {
@@ -251,6 +249,46 @@ public class StudyGroup extends BaseTimeEntity {
         // members에서 제거
         removeMember(member);
     }
+
+
+    public void expelMember(Long targetMemberId, long currentMemberId) {
+        
+        // 현재 유저와 강퇴 대상 유저 조회
+        StudyMember currentMember = findStudyMemberByMemberId(currentMemberId);
+        StudyMember targetMember = findStudyMemberByStudyMemberId(targetMemberId);
+
+        // 규칙 검증
+        validExpelMember(targetMember, currentMember);
+
+        removeMember(targetMember);
+    }
+
+    public void changeRole(Long targetStudyMemberId, Long currentMemberId, StudyRole role) {
+
+        // studyMember 조회
+        StudyMember targetMember = findStudyMemberByStudyMemberId(targetStudyMemberId);
+        StudyMember currentMember = findStudyMemberByMemberId(currentMemberId);
+        
+        // 규칙 검증
+        validChangeRole(targetMember, currentMember);
+
+        targetMember.changeRole(role);
+    }
+
+    private void validChangeRole(StudyMember targetMember, StudyMember currentMember) {
+        
+        // 방장 체크
+        if (!isLeader(currentMember.getMemberId())) throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
+
+        // 셀프 변경 체크
+        if (currentMember.equals(targetMember)) throw new DomainException(ErrorCode.CANNOT_SELF_PROC);
+        // 그룹에 속한 회원인지 체크는 꺼낼 때 알아서 되니 패스.
+
+        // 진행중인 스터인지 상태 체크
+        if (this.operationStatus == OperationStatus.CLOSED) throw new DomainException(ErrorCode.CLOSE_STUDY_CANNOT_PROC);
+
+    }
+
 
     private void removeMember(StudyMember member) {
 
@@ -264,18 +302,6 @@ public class StudyGroup extends BaseTimeEntity {
 
         if (member.isLeader()) throw new DomainException(ErrorCode.OWNER_CANNOT_LEAVE);
         if (this.operationStatus == OperationStatus.CLOSED) throw new DomainException(ErrorCode.CLOSE_STUDY_CANNOT_LEAVE);
-    }
-
-    public void expelMember(Long targetMemberId, long currentMemberId) {
-        
-        // 현재 유저와 강퇴 대상 유저 조회
-        StudyMember currentMember = findStudyMemberByMemberId(currentMemberId);
-        StudyMember targetMember = findStudyMemberByStudyMemberId(targetMemberId);
-
-        // 규칙 검증
-        validExpelMember(targetMember, currentMember);
-
-        removeMember(targetMember);
     }
 
     private void validExpelMember(StudyMember  targetMember, StudyMember currentMember) {
