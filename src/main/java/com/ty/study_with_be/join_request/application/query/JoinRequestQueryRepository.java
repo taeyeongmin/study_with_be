@@ -4,10 +4,13 @@ import com.ty.study_with_be.join_request.domain.model.enums.JoinRequestStatus;
 import com.ty.study_with_be.join_request.presentation.query.dto.JoinRequestListItem;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface JoinRequestQueryRepository {
 
     boolean existsPendingJoin(Long studyGroupId, Long memberId);
+
+    Optional<Long> findPendingJoinRequestId(Long studyGroupId, Long memberId);
 
     List<JoinRequestListItem> findJoinRequests(Long studyGroupId, JoinRequestStatus status);
 }

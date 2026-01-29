@@ -6,6 +6,7 @@ import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
 import com.ty.study_with_be.study_group.presentation.query.dto.MyStudyGroupStatusRes;
 import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupDetailRes;
 import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupListRes;
+import com.ty.study_with_be.study_group.presentation.query.dto.StudyMemberListRes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -15,6 +16,7 @@ import jakarta.annotation.security.PermitAll;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
@@ -111,5 +113,21 @@ public class StudyGroupQueryController {
         return status;
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/{studyGroupId}/member/list")
+    @Operation(
+            summary = "스터디 그룹 회원 목록 조회",
+            description = """
+                    ## 기능 설명
+                    - 해당 그룹의 회원 목록을 조회.
+                    """
+    )
+    @Parameter(name = "studyGroupId", description = "스터디 그룹 ID", in = ParameterIn.PATH)
+    public StudyMemberListRes getMemberList(
+            @PathVariable Long studyGroupId
+    ){
+
+        return queryService.getStudyMemberList(studyGroupId);
+    }
 
 }

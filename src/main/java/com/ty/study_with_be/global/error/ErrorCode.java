@@ -35,13 +35,17 @@ public enum ErrorCode {
     STUDY_GROUP_NOT_MANAGER(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.not_manager"),
     OWNER_CANNOT_LEAVE(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.owner_cannot_leave"),
     CLOSE_STUDY_CANNOT_LEAVE(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.close_study_cannot_leave"),
+    CLOSE_STUDY_CANNOT_PROC(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.close_study_cannot_proc"),
+    CANNOT_SELF_KICK(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.cannot_self_kick"),
+    CANNOT_SELF_PROC(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.cannot_self_proc"),
 
     ALREADY_JOINED(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.already_joined"),
     ALREADY_JOINED_MEMBER(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.already_joined_member"),
     DUPLICATE_REQUEST(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.duplicate_request"),
-    HAS_NOT_PERMISSION(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.has_not_permission"),
+    HAS_NOT_PERMISSION(HttpStatus.FORBIDDEN, "error.join_request.has_not_permission"),
     REQUEST_NOT_PENDING(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.not_pending"),
     INVALID_REQUEST_PRECESS_STATUS(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.invalid_precess_status"),
+    NOT_REQUEST_OWNER(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.not_request_owner"),
 
 
 

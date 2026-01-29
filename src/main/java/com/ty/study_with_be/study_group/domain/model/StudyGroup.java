@@ -4,10 +4,7 @@ import com.nimbusds.oauth2.sdk.util.StringUtils;
 import com.ty.study_with_be.global.entity.BaseTimeEntity;
 import com.ty.study_with_be.global.error.ErrorCode;
 import com.ty.study_with_be.global.exception.DomainException;
-import com.ty.study_with_be.study_group.domain.model.enums.OperationStatus;
-import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
-import com.ty.study_with_be.study_group.domain.model.enums.SchedulingType;
-import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
+import com.ty.study_with_be.study_group.domain.model.enums.*;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -129,25 +126,12 @@ public class StudyGroup extends BaseTimeEntity {
         return group;
     }
 
-    private void addReader(Long memberId) {
 
-        if (memberId == null) throw new DomainException(ErrorCode.STUDY_OWNER_REQUIRED);
-        if (this.members.stream().anyMatch(StudyMember::isLeader)) throw new DomainException(ErrorCode.DUPLICATE_STUDY_OWNER);;
+    public void joinMember(Long requesterId, Long currentMemberId) {
 
-        StudyMember leader = StudyMember.createLeader(this, memberId);
-        this.members.add(leader);
-    }
+        validJoinMember(currentMemberId);
 
-    private StudyMember getLeader(){
-        return members.stream().filter(StudyMember::isLeader).findFirst().orElse(null);
-    }
-
-    public void joinMember(Long memberId) {
-
-        if (!isRecruiting()) throw new  DomainException(ErrorCode.NOT_RECRUITING);
-        if (isFull()) throw new  DomainException(ErrorCode.CAPACITY_EXCEEDED);
-
-        StudyMember newMember = StudyMember.createMember(this, memberId);
+        StudyMember newMember = StudyMember.createMember(this, requesterId);
 
         if (this.members.contains(newMember)) throw new  DomainException(ErrorCode.ALREADY_JOINED_MEMBER);
 
@@ -155,18 +139,20 @@ public class StudyGroup extends BaseTimeEntity {
         increaseMemberCount();
     }
 
-    private void increaseMemberCount(){
-        this.currentCount += 1;
-//        if (isFull()) this.recruitStatus =  RecruitStatus.RECRUIT_END;
-    }
+    protected void validJoinMember(Long currentMemberId) {
 
-    private boolean checkLeader(Long memberId) {
-        return getLeader().getMemberId().equals(memberId);
+        StudyMember studyMember = findStudyMemberByMemberId(currentMemberId);
+
+        if (!studyMember.hasManageRole()) throw new DomainException(ErrorCode.HAS_NOT_PERMISSION);
+
+        if (!isRecruiting()) throw new DomainException(ErrorCode.NOT_RECRUITING);
+
+        if (isFull()) throw new DomainException(ErrorCode.CAPACITY_EXCEEDED);
     }
 
     public void updateInfo(String title, String category, String topic, String region,  StudyMode studyMode, int capacity, String description, LocalDate applyDeadlineAt, Set<DayOfWeek> schedules,Long memberId) {
 
-        if (!checkLeader(memberId)) throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
+        if (!isLeader(memberId)) throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
 
         if (studyMode == StudyMode.OFFLINE && StringUtils.isBlank(region))
             throw new DomainException(ErrorCode.OFFLINE_STUDY_REGION_REQUIRED);;
@@ -185,7 +171,7 @@ public class StudyGroup extends BaseTimeEntity {
     // TODO: 테스트 필요
     public void updateOperationInfo(int capacity, StudyMode studyMode, SchedulingType schedulingType, Set<DayOfWeek> schedules, Long memberId) {
 
-        if (!checkLeader(memberId)) throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
+        if (!isLeader(memberId)) throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
 
         if (studyMode == StudyMode.OFFLINE && StringUtils.isBlank(region))
             throw new DomainException(ErrorCode.OFFLINE_STUDY_REGION_REQUIRED);
@@ -218,26 +204,112 @@ public class StudyGroup extends BaseTimeEntity {
         return this.recruitStatus.equals(RecruitStatus.RECRUITING);
     }
 
-    public StudyMember findMember(Long memberId) {
+    public StudyMember findStudyMemberByStudyMemberId(Long studyMemberId) {
+        
         return this.members.stream()
-                .filter(member -> member.isSameMember(memberId))
-                .findFirst().orElse(null);
+                .filter(member -> member.isSameMemberByStudyMemberId(studyMemberId))
+                .findFirst().orElseThrow(()-> new DomainException(ErrorCode.NOT_GROUP_MEMBER));
+    }
+
+    public StudyMember findStudyMemberByMemberId(Long memberId) {
+
+        return this.members.stream()
+                .filter(member -> member.isSameMemberByMemberId(memberId))
+                .findFirst().orElseThrow(()-> new DomainException(ErrorCode.NOT_GROUP_MEMBER));
     }
 
     public void leave(Long memberId) {
 
         // StudyMember 조회
-        StudyMember member = findMember(memberId);
+        StudyMember member = findStudyMemberByMemberId(memberId);
         // 검증
         validLeave(member);
+        // members에서 제거
+        removeMember(member);
+    }
+
+    public void transferLeaderAndLeave(Long targetStudyMemberId, Long currentMemberId) {
+        changeRole(targetStudyMemberId, currentMemberId,StudyRole.LEADER);
+        leaderLeave(currentMemberId);
+    }
+
+    public void expelMember(Long targetMemberId, long currentMemberId) {
+        
+        // 현재 유저와 강퇴 대상 유저 조회
+        StudyMember currentMember = findStudyMemberByMemberId(currentMemberId);
+        StudyMember targetMember = findStudyMemberByStudyMemberId(targetMemberId);
+
+        // 규칙 검증
+        validExpelMember(targetMember, currentMember);
+
+        removeMember(targetMember);
+    }
+
+    public void changeRole(Long targetStudyMemberId, Long currentMemberId, StudyRole role) {
+
+        // studyMember 조회
+        StudyMember targetMember = findStudyMemberByStudyMemberId(targetStudyMemberId);
+        StudyMember currentMember = findStudyMemberByMemberId(currentMemberId);
+        
+        // 규칙 검증
+        validChangeRole(targetMember, currentMember);
+
+        targetMember.changeRole(role);
+    }
+
+    public boolean isLeader(Long memberId) {
+        return getLeader().getMemberId().equals(memberId);
+    }
+
+    private void addReader(Long memberId) {
+
+        if (memberId == null) throw new DomainException(ErrorCode.STUDY_OWNER_REQUIRED);
+        if (this.members.stream().anyMatch(StudyMember::isLeader)) throw new DomainException(ErrorCode.DUPLICATE_STUDY_OWNER);;
+
+        StudyMember leader = StudyMember.createLeader(this, memberId);
+        this.members.add(leader);
+    }
+
+    private StudyMember getLeader(){
+        return members.stream().filter(StudyMember::isLeader).findFirst().orElse(null);
+    }
+
+    private void increaseMemberCount(){
+        this.currentCount += 1;
+
+        // if (isFull()) this.recruitStatus =  RecruitStatus.RECRUIT_END;
+    }
+
+    private void leaderLeave(Long memberId) {
+
+        // StudyMember 조회
+        StudyMember member = findStudyMemberByMemberId(memberId);
 
         // members에서 제거
         removeMember(member);
     }
 
+    private void validChangeRole(StudyMember targetMember, StudyMember currentMember) {
+        
+        // 방장 체크
+        if (!isLeader(currentMember.getMemberId())) throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
+
+        // 셀프 변경 체크
+        if (currentMember.equals(targetMember)) throw new DomainException(ErrorCode.CANNOT_SELF_PROC);
+        // 그룹에 속한 회원인지 체크는 꺼낼 때 알아서 되니 패스.
+
+        // 진행중인 스터인지 상태 체크
+        if (this.operationStatus == OperationStatus.CLOSED) throw new DomainException(ErrorCode.CLOSE_STUDY_CANNOT_PROC);
+
+    }
+
+
     private void removeMember(StudyMember member) {
+
         this.members.remove(member);
-        decreaseMemberCount();
+        if (this.currentCount <= 1) throw new IllegalStateException("현재 인원 감소 불가");
+        this.currentCount--;
+        // 인원이 빠지면 다시 모집중 전환 가능한 정책(방장 전환) - 여기선 자동 전환 안함
     }
 
     private void validLeave(StudyMember member) {
@@ -246,18 +318,18 @@ public class StudyGroup extends BaseTimeEntity {
         if (this.operationStatus == OperationStatus.CLOSED) throw new DomainException(ErrorCode.CLOSE_STUDY_CANNOT_LEAVE);
     }
 
-    public void decreaseMemberCount() {
-        if (this.currentCount <= 1) throw new IllegalStateException("현재 인원 감소 불가");
-        this.currentCount--;
-        // 인원이 빠지면 다시 모집중 전환 가능한 정책(방장 전환) - 여기선 자동 전환 안함
+    private void validExpelMember(StudyMember  targetMember, StudyMember currentMember) {
+
+        // self 강퇴 검증
+        if (currentMember.equals(targetMember)) throw new DomainException(ErrorCode.CANNOT_SELF_KICK);
+
+        // 권한에 대한 검증
+        if (!currentMember.canKick(targetMember)) throw new DomainException(ErrorCode.HAS_NOT_PERMISSION);
+
+        // 스터디 상태 검증
+        if (this.operationStatus == OperationStatus.CLOSED) throw new DomainException(ErrorCode.CLOSE_STUDY_CANNOT_LEAVE);
     }
-//
-//    public void validateAccessible() {
-//        if (this.status == RecruitStatus.SUSPENDED) {
-//            throw new IllegalStateException("비활성 스터디는 접근할 수 없습니다.");
-//        }
-//    }
-//
+
 //    public void validateCanApply() {
 //        if (this.status != RecruitStatus.RECRUITING) {
 //            throw new IllegalStateException("모집중 상태에서만 가입 신청이 가능합니다.");
@@ -266,21 +338,5 @@ public class StudyGroup extends BaseTimeEntity {
 //            throw new IllegalStateException("가입 신청 마감일이 지났습니다.");
 //        }
 //    }
-//
-//    public void validateCanEdit(boolean isLeader) {
-//        if (!isLeader) throw new IllegalStateException("방장만 수정할 수 있습니다.");
-//        if (this.status == RecruitStatus.CLOSED) throw new IllegalStateException("종료된 스터디는 수정할 수 없습니다.");
-//    }
-//
-//    public void changeCapacity(int newCapacity) {
-//        if (newCapacity < this.currentCount) {
-//            throw new IllegalArgumentException("정원은 현재 인원 이상이어야 합니다.");
-//        }
-//        this.capacity = newCapacity;
-//        // 정원이 늘어나면 RECRUIT_END -> RECRUITING 가능(정책에 따라 방장이 상태 변경)
-//    }
-//
-//    public boolean isSuspended() {
-//        return this.status == RecruitStatus.SUSPENDED;
-//    }
+
 }

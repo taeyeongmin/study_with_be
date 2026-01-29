@@ -6,6 +6,7 @@ import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyRole;
 import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupDetailRes;
 import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupListItem;
+import com.ty.study_with_be.study_group.presentation.query.dto.StudyMemberItem;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
@@ -193,6 +194,26 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
                 .getSingleResult();
 
         return count > 0;
+    }
+
+    @Override
+    public List<StudyMemberItem> findStudyMemberList(Long studyGroupId) {
+
+        return em.createQuery("""
+            select new com.ty.study_with_be.study_group.presentation.query.dto.StudyMemberItem(
+                sm.studyMemberId,
+                m.nickname,
+                m.email,
+                sm.role,
+                sm.createdAt
+            )
+            from StudyMember sm
+            join Member m
+                on sm.memberId = m.memberId
+            where sm.studyGroup.studyGroupId = :studyGroupId        
+        """, StudyMemberItem.class)
+                .setParameter("studyGroupId", studyGroupId)
+                .getResultList();
     }
 
 

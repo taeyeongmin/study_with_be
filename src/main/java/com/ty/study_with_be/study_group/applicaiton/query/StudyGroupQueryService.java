@@ -6,10 +6,7 @@ import com.ty.study_with_be.study_group.domain.model.StudyGroup;
 import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyRole;
-import com.ty.study_with_be.study_group.presentation.query.dto.MyStudyGroupStatusRes;
-import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupDetailRes;
-import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupListItem;
-import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupListRes;
+import com.ty.study_with_be.study_group.presentation.query.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -65,6 +63,12 @@ public class StudyGroupQueryService {
     }
 
 
+    /**
+     * 해당 스터디 그룹 내 나의 정보 조회
+     * @param groupId
+     * @param memberId
+     * @return
+     */
     public MyStudyGroupStatusRes getMyStatus(Long groupId, Long memberId) {
 
         // 가입 여부 + 역할 조회
@@ -76,11 +80,17 @@ public class StudyGroupQueryService {
             return MyStudyGroupStatusRes.joined(role.get());
         }
 
-        if (joinRequestQueryRepository.existsPendingJoin(groupId, memberId)) {
-            return MyStudyGroupStatusRes.pending();
-        }
+        Optional<Long> joinRequestId =
+                joinRequestQueryRepository.findPendingJoinRequestId(groupId, memberId);
+        
+        return joinRequestId.map(MyStudyGroupStatusRes::pending).orElseGet(MyStudyGroupStatusRes::none);
 
-        return MyStudyGroupStatusRes.none();
     }
 
+    public StudyMemberListRes getStudyMemberList(Long studyGroupId) {
+
+        List<StudyMemberItem> studyMemberList = groupQueryRepository.findStudyMemberList(studyGroupId);
+
+        return new StudyMemberListRes(studyMemberList);
+    }
 }

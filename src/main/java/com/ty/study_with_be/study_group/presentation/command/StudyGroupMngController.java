@@ -2,7 +2,6 @@ package com.ty.study_with_be.study_group.presentation.command;
 
 import com.ty.study_with_be.study_group.applicaiton.command.CreateGroupUseCase;
 import com.ty.study_with_be.study_group.applicaiton.command.DeleteGroupUseCase;
-import com.ty.study_with_be.study_group.applicaiton.command.LeaveGroupUseCase;
 import com.ty.study_with_be.study_group.applicaiton.command.UpdateGroupUseCase;
 import com.ty.study_with_be.study_group.presentation.command.dto.StudyGroupOperationInfoUpdateReq;
 import com.ty.study_with_be.study_group.presentation.command.dto.StudyGroupReq;
@@ -25,7 +24,7 @@ public class StudyGroupMngController {
     private final CreateGroupUseCase createGroupUseCase;
     private final UpdateGroupUseCase updateGroupUseCase;
     private final DeleteGroupUseCase deleteGroupUseCase;
-    private final LeaveGroupUseCase leaveGroupUseCase;
+
 
     @PreAuthorize("isAuthenticated()")
     @Operation(
@@ -122,25 +121,4 @@ public class StudyGroupMngController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("isAuthenticated()")
-    @DeleteMapping("/{studyGroupId}/leave")
-    @Operation(
-            summary = "스터디그룹 탈퇴",
-            description = """
-                    ## 기능 설명
-                    - `스터디그룹을 탈퇴한다.`
-                    ---
-                    ## 상세 설명
-                    - **방장은 탈퇴 불가.
-                    - **종료 된 그룹에 대해서는 탈퇴 불가.**
-                    """
-    )
-    public ResponseEntity leaveGroup(
-            @PathVariable Long studyGroupId
-            , @AuthenticationPrincipal User principal
-    ) {
-        leaveGroupUseCase.leaveGroup(studyGroupId, Long.valueOf(principal.getUsername()));
-
-        return ResponseEntity.ok().build();
-    }
 }
