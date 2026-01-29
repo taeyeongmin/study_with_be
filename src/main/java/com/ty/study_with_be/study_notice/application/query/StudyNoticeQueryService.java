@@ -28,7 +28,7 @@ public class StudyNoticeQueryService {
             StudyNoticeQueryReq param
     ) {
         if (!studyGroupQueryRepository.existsMember(groupId,memberId))
-            throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
+            throw new DomainException(ErrorCode.NOT_GROUP_MEMBER);
 
         List<StudyNoticeItem> items;
 

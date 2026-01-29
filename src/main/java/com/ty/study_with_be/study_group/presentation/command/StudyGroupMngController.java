@@ -1,9 +1,10 @@
 package com.ty.study_with_be.study_group.presentation.command;
 
-import com.ty.study_with_be.study_group.applicaiton.command.*;
+import com.ty.study_with_be.study_group.applicaiton.command.CreateGroupUseCase;
+import com.ty.study_with_be.study_group.applicaiton.command.DeleteGroupUseCase;
+import com.ty.study_with_be.study_group.applicaiton.command.UpdateGroupUseCase;
 import com.ty.study_with_be.study_group.presentation.command.dto.StudyGroupOperationInfoUpdateReq;
 import com.ty.study_with_be.study_group.presentation.command.dto.StudyGroupReq;
-import com.ty.study_with_be.study_group.presentation.command.dto.StudyMemberRoleChangeReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -23,9 +24,6 @@ public class StudyGroupMngController {
     private final CreateGroupUseCase createGroupUseCase;
     private final UpdateGroupUseCase updateGroupUseCase;
     private final DeleteGroupUseCase deleteGroupUseCase;
-    private final LeaveGroupUseCase leaveGroupUseCase;
-    private final ExpelMemberUseCase expelMemberUseCase;
-    private final ChangeStudyMemberRoleUseCase changeStudyMemberRoleUseCase;
 
 
     @PreAuthorize("isAuthenticated()")
@@ -123,74 +121,4 @@ public class StudyGroupMngController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("isAuthenticated()")
-    @DeleteMapping("/{studyGroupId}/leave")
-    @Operation(
-            summary = "스터디그룹 탈퇴",
-            description = """
-                    ## 기능 설명
-                    - `스터디그룹을 탈퇴한다.`
-                    ---
-                    ## 상세 설명
-                    - **방장은 탈퇴 불가.
-                    - **종료 된 그룹에 대해서는 탈퇴 불가.**
-                    """
-    )
-    public ResponseEntity leaveGroup(
-            @PathVariable Long studyGroupId
-            , @AuthenticationPrincipal User principal
-    ) {
-        leaveGroupUseCase.leaveGroup(studyGroupId, Long.valueOf(principal.getUsername()));
-
-        return ResponseEntity.ok().build();
-    }
-
-    @DeleteMapping("/{studyGroupId}/remove/{memberId}")
-    @Operation(
-            summary = "스터디그룹 강제 탈퇴",
-            description = """
-                    ## 기능 설명
-                    - `스터디그룹을 탈퇴한다.`
-                    ---
-                    ## 상세 설명
-                    - **본인 캉퇴 불가
-                    - **방장은 누구든 강퇴 가능.
-                    - **리더는 MEMBER만 강퇴 가능.
-                    - **종료 된 그룹에 대해서는 탈퇴 불가.**
-                    """
-    )
-    public ResponseEntity expelMember(
-            @PathVariable Long studyGroupId
-            , @PathVariable Long memberId
-            , @AuthenticationPrincipal User principal
-    ) {
-        expelMemberUseCase.expelMember(studyGroupId, memberId, Long.valueOf(principal.getUsername()));
-
-        return ResponseEntity.ok().build();
-    }
-
-    @Operation(
-            summary = "스터디그룹 멤버 역할 변경",
-            description = """
-                    ## 기능 설명
-                    - `스터디그룹 멤버의 역할을 변경한다.`
-                    ---
-                    ## 상세 설명
-                    - **방장만 할 수 있다.
-                    - **해당 그룹에 속한 멤버에 대해 변경.
-                    - **종료 상태인 그룹에 대해선 불가능.
-                    """
-    )
-    @PreAuthorize("isAuthenticated()")
-    @PatchMapping("/{studyGroupId}/members/{memberId}/role")
-    public ResponseEntity<Void> changeMemberRole(
-            @PathVariable Long studyGroupId
-            , @PathVariable Long memberId
-            , @AuthenticationPrincipal User principal
-            , @RequestBody StudyMemberRoleChangeReq req
-    ){
-        changeStudyMemberRoleUseCase.change(studyGroupId,memberId,Long.valueOf(principal.getUsername()),req.getRole());
-
-        return ResponseEntity.ok().build();
-    }
 }

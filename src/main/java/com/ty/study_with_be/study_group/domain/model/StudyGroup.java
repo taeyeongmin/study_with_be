@@ -250,6 +250,19 @@ public class StudyGroup extends BaseTimeEntity {
         removeMember(member);
     }
 
+    public void transferLeaderAndLeave(Long targetStudyMemberId, Long currentMemberId) {
+        changeRole(targetStudyMemberId, currentMemberId,StudyRole.LEADER);
+        leaderLeave(currentMemberId);
+    }
+
+    private void leaderLeave(Long memberId) {
+        // StudyMember 조회
+        StudyMember member = findStudyMemberByMemberId(memberId);
+
+        // members에서 제거
+        removeMember(member);
+    }
+
 
     public void expelMember(Long targetMemberId, long currentMemberId) {
         
@@ -315,6 +328,7 @@ public class StudyGroup extends BaseTimeEntity {
         // 스터디 상태 검증
         if (this.operationStatus == OperationStatus.CLOSED) throw new DomainException(ErrorCode.CLOSE_STUDY_CANNOT_LEAVE);
     }
+
 
 //
 //    public void validateAccessible() {
