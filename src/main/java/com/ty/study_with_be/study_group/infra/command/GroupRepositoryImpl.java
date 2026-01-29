@@ -47,11 +47,13 @@ public class GroupRepositoryImpl implements GroupRepository {
 
     @Override
     public Optional<StudyGroup> findById(Long studyGroupId) {
+        System.out.println(">>>>>>>>>> findById 호출");
         return groupJpaRepository.findById(studyGroupId);
     }
 
     @Override
     public Optional<StudyGroup> findByIdForUpdate(Long studyGroupId) {
+        System.out.println(">>>>>>>>>> findByIdForUpdate 호출");
         return groupJpaRepository.findByStudyGroupIdForUpdate(studyGroupId);
     }
 

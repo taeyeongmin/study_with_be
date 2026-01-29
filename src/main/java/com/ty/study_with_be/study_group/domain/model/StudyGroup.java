@@ -142,12 +142,11 @@ public class StudyGroup extends BaseTimeEntity {
         return members.stream().filter(StudyMember::isLeader).findFirst().orElse(null);
     }
 
-    public void joinMember(Long memberId) {
+    public void joinMember(Long requesterId, Long currentMemberId) {
 
-        if (!isRecruiting()) throw new  DomainException(ErrorCode.NOT_RECRUITING);
-        if (isFull()) throw new  DomainException(ErrorCode.CAPACITY_EXCEEDED);
+        validJoinMember(currentMemberId);
 
-        StudyMember newMember = StudyMember.createMember(this, memberId);
+        StudyMember newMember = StudyMember.createMember(this, requesterId);
 
         if (this.members.contains(newMember)) throw new  DomainException(ErrorCode.ALREADY_JOINED_MEMBER);
 
@@ -155,9 +154,21 @@ public class StudyGroup extends BaseTimeEntity {
         increaseMemberCount();
     }
 
+    protected void validJoinMember(Long currentMemberId) {
+
+        StudyMember studyMember = findStudyMemberByMemberId(currentMemberId);
+
+        if (!studyMember.hasManageRole()) throw new DomainException(ErrorCode.HAS_NOT_PERMISSION);
+
+        if (!isRecruiting()) throw new DomainException(ErrorCode.NOT_RECRUITING);
+
+        if (isFull()) throw new DomainException(ErrorCode.CAPACITY_EXCEEDED);
+    }
+
     private void increaseMemberCount(){
         this.currentCount += 1;
-//        if (isFull()) this.recruitStatus =  RecruitStatus.RECRUIT_END;
+
+        // if (isFull()) this.recruitStatus =  RecruitStatus.RECRUIT_END;
     }
 
     private boolean checkLeader(Long memberId) {
@@ -225,6 +236,7 @@ public class StudyGroup extends BaseTimeEntity {
     }
 
     public StudyMember findStudyMemberByMemberId(Long memberId) {
+
         return this.members.stream()
                 .filter(member -> member.isSameMemberByMemberId(memberId))
                 .findFirst().orElse(null);
@@ -267,6 +279,9 @@ public class StudyGroup extends BaseTimeEntity {
     }
 
     private void validExpelMember(StudyMember  targetMember, StudyMember currentMember) {
+
+        // self 강퇴 검증
+        if (currentMember.equals(targetMember)) throw new DomainException(ErrorCode.CANNOT_SELF_KICK);
 
         // 권한에 대한 검증
         if (!currentMember.canKick(targetMember)) throw new DomainException(ErrorCode.HAS_NOT_PERMISSION);

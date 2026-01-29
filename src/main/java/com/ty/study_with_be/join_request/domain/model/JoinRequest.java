@@ -57,6 +57,7 @@ JoinRequest extends BaseTimeEntity {
     }
 
     public void approve(Long processorId) {
+
         validPending();
         this.status = JoinRequestStatus.APPROVED;
         this.processedByMemberId = processorId;
@@ -64,6 +65,7 @@ JoinRequest extends BaseTimeEntity {
     }
 
     public void reject(Long processorId) {
+
         validPending();
         this.status = JoinRequestStatus.REJECTED;
         this.processedByMemberId = processorId;

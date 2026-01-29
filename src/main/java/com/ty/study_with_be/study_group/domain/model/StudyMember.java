@@ -1,14 +1,12 @@
 package com.ty.study_with_be.study_group.domain.model;
 
 import com.ty.study_with_be.global.entity.BaseTimeEntity;
-import com.ty.study_with_be.member.domain.model.Member;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -96,9 +94,6 @@ public class StudyMember extends BaseTimeEntity {
     }
 
     public boolean canKick(StudyMember targetMember) {
-
-        if (this.memberId.equals(targetMember.memberId))
-            return false;
 
         return this.role.canKick(targetMember.role);
     }

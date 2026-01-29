@@ -8,12 +8,13 @@ import com.ty.study_with_be.join_request.domain.model.JoinRequest;
 import com.ty.study_with_be.join_request.domain.model.enums.JoinRequestStatus;
 import com.ty.study_with_be.study_group.domain.GroupRepository;
 import com.ty.study_with_be.study_group.domain.model.StudyGroup;
-import com.ty.study_with_be.study_group.domain.model.StudyMember;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -37,20 +38,20 @@ public class ProcessJoinRequestService implements ProcessJoinRequestUseCase {
         if (!joinRequest.getStudyGroupId().equals(studyGroupId)) throw new RuntimeException("요청 확인 바람");
 
         // groupEntity 조회 (row-level lock)
-        StudyGroup studyGroup = groupRepository.findByIdForUpdate(studyGroupId)
+        StudyGroup studyGroup = getStudyGroup(studyGroupId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 그룹이 존재하지 않습니다."));
 
-        StudyMember studyMember = studyGroup.findStudyMemberByMemberId(processorId);
-
-        if (!studyMember.hasManageRole())
-            throw new DomainException(ErrorCode.HAS_NOT_PERMISSION);
-
         if (status == JoinRequestStatus.APPROVED) {
-            studyGroup.joinMember(joinRequest.getRequesterId());
+            studyGroup.joinMember(joinRequest.getRequesterId(), processorId);
             joinRequest.approve(processorId);
         } else {
             joinRequest.reject(processorId);
         }
+    }
+
+    // stub 하기 위해 분리
+    protected Optional<StudyGroup> getStudyGroup(Long studyGroupId) {
+        return groupRepository.findByIdForUpdate(studyGroupId);
     }
 
 }
