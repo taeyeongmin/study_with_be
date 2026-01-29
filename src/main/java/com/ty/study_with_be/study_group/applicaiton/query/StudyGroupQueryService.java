@@ -80,11 +80,11 @@ public class StudyGroupQueryService {
             return MyStudyGroupStatusRes.joined(role.get());
         }
 
-        if (joinRequestQueryRepository.existsPendingJoin(groupId, memberId)) {
-            return MyStudyGroupStatusRes.pending();
-        }
+        Optional<Long> joinRequestId =
+                joinRequestQueryRepository.findPendingJoinRequestId(groupId, memberId);
+        
+        return joinRequestId.map(MyStudyGroupStatusRes::pending).orElseGet(MyStudyGroupStatusRes::none);
 
-        return MyStudyGroupStatusRes.none();
     }
 
     public StudyMemberListRes getStudyMemberList(Long studyGroupId) {

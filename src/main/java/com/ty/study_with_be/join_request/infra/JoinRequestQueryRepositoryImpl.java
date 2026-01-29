@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -31,6 +32,25 @@ public class JoinRequestQueryRepositoryImpl implements JoinRequestQueryRepositor
                 .getSingleResult();
 
         return count > 0;
+    }
+
+    @Override
+    public Optional<Long> findPendingJoinRequestId(Long studyGroupId, Long memberId) {
+
+        return em.createQuery("""
+            select jr.joinRequestId
+            from JoinRequest jr
+            where jr.studyGroupId = :studyGroupId
+              and jr.requesterId = :memberId
+              and jr.status = :status
+            order by jr.createdAt desc
+        """, Long.class)
+                .setParameter("studyGroupId", studyGroupId)
+                .setParameter("memberId", memberId)
+                .setParameter("status", JoinRequestStatus.PENDING)
+                .setMaxResults(1)
+                .getResultStream()
+                .findFirst();
     }
 
     @Override

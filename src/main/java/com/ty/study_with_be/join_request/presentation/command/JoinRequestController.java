@@ -1,5 +1,6 @@
 package com.ty.study_with_be.join_request.presentation.command;
 
+import com.ty.study_with_be.join_request.application.command.JoinRequestCancelUseCase;
 import com.ty.study_with_be.join_request.application.command.JoinRequestUseCase;
 import com.ty.study_with_be.join_request.application.command.ProcessJoinRequestUseCase;
 import com.ty.study_with_be.join_request.presentation.query.dto.JoinRequestProcReq;
@@ -20,7 +21,34 @@ import org.springframework.web.bind.annotation.*;
 public class JoinRequestController {
 
     private final JoinRequestUseCase joinRequestUseCase;
+    private final JoinRequestCancelUseCase joinRequestCancelUseCase;
     private final ProcessJoinRequestUseCase processJoinRequestUseCase;
+
+
+    @PreAuthorize("isAuthenticated()")
+    @Operation(
+            summary = "스터디 가입 신청 취소",
+            description = """
+                    ## 기능 설명
+                    - `스터디 가입을 취소한다.`
+                    ---
+                    ## 상세 설명
+                    - **신청자 본인만 취소 가능(방장,매니저 포함).**
+                    - **'대기'상태에서만 취소 가능.**
+                    ---
+                  
+                    """
+    )
+    @PatchMapping("/join_request/{joinRequestId}/cancel")
+    public ResponseEntity<Void> joinRequestCancel(
+            @PathVariable Long studyGroupId,
+            @PathVariable Long joinRequestId,
+            @AuthenticationPrincipal User user
+    ){
+        joinRequestCancelUseCase.cancel(studyGroupId,joinRequestId, Long.valueOf(user.getUsername()));
+
+        return ResponseEntity.ok().build();
+    }
 
     @PreAuthorize("isAuthenticated()")
     @Operation(
@@ -58,6 +86,7 @@ public class JoinRequestController {
 
         return ResponseEntity.ok().build();
     }
+
 
     @PreAuthorize("isAuthenticated()")
     @Operation(

@@ -12,19 +12,21 @@ public class MyStudyGroupStatusRes {
 
     private final MyStudyGroupStatus status;
     private final StudyRole studyRole;
-//    private final boolean hasManageRole;
+    private final Long joinRequestId;
 
     public static MyStudyGroupStatusRes none() {
         return new MyStudyGroupStatusRes(
                 MyStudyGroupStatus.NONE
                 , StudyRole.NONE
+                , null
         );
     }
 
-    public static MyStudyGroupStatusRes pending() {
+    public static MyStudyGroupStatusRes pending(Long joinRequestId) {
         return new MyStudyGroupStatusRes(
                 MyStudyGroupStatus.PENDING
                 ,StudyRole.NONE
+                , joinRequestId
         );
     }
 
@@ -36,6 +38,7 @@ public class MyStudyGroupStatusRes {
         return new MyStudyGroupStatusRes(
                 MyStudyGroupStatus.JOINED
                 , role
+                , null
         );
     }
 }

@@ -45,6 +45,7 @@ public enum ErrorCode {
     HAS_NOT_PERMISSION(HttpStatus.FORBIDDEN, "error.join_request.has_not_permission"),
     REQUEST_NOT_PENDING(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.not_pending"),
     INVALID_REQUEST_PRECESS_STATUS(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.invalid_precess_status"),
+    NOT_REQUEST_OWNER(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.not_request_owner"),
 
 
 

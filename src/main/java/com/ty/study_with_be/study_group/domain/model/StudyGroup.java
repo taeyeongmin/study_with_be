@@ -126,18 +126,6 @@ public class StudyGroup extends BaseTimeEntity {
         return group;
     }
 
-    private void addReader(Long memberId) {
-
-        if (memberId == null) throw new DomainException(ErrorCode.STUDY_OWNER_REQUIRED);
-        if (this.members.stream().anyMatch(StudyMember::isLeader)) throw new DomainException(ErrorCode.DUPLICATE_STUDY_OWNER);;
-
-        StudyMember leader = StudyMember.createLeader(this, memberId);
-        this.members.add(leader);
-    }
-
-    private StudyMember getLeader(){
-        return members.stream().filter(StudyMember::isLeader).findFirst().orElse(null);
-    }
 
     public void joinMember(Long requesterId, Long currentMemberId) {
 
@@ -160,16 +148,6 @@ public class StudyGroup extends BaseTimeEntity {
         if (!isRecruiting()) throw new DomainException(ErrorCode.NOT_RECRUITING);
 
         if (isFull()) throw new DomainException(ErrorCode.CAPACITY_EXCEEDED);
-    }
-
-    private void increaseMemberCount(){
-        this.currentCount += 1;
-
-        // if (isFull()) this.recruitStatus =  RecruitStatus.RECRUIT_END;
-    }
-
-    private boolean isLeader(Long memberId) {
-        return getLeader().getMemberId().equals(memberId);
     }
 
     public void updateInfo(String title, String category, String topic, String region,  StudyMode studyMode, int capacity, String description, LocalDate applyDeadlineAt, Set<DayOfWeek> schedules,Long memberId) {
@@ -255,15 +233,6 @@ public class StudyGroup extends BaseTimeEntity {
         leaderLeave(currentMemberId);
     }
 
-    private void leaderLeave(Long memberId) {
-        // StudyMember 조회
-        StudyMember member = findStudyMemberByMemberId(memberId);
-
-        // members에서 제거
-        removeMember(member);
-    }
-
-
     public void expelMember(Long targetMemberId, long currentMemberId) {
         
         // 현재 유저와 강퇴 대상 유저 조회
@@ -286,6 +255,38 @@ public class StudyGroup extends BaseTimeEntity {
         validChangeRole(targetMember, currentMember);
 
         targetMember.changeRole(role);
+    }
+
+    public boolean isLeader(Long memberId) {
+        return getLeader().getMemberId().equals(memberId);
+    }
+
+    private void addReader(Long memberId) {
+
+        if (memberId == null) throw new DomainException(ErrorCode.STUDY_OWNER_REQUIRED);
+        if (this.members.stream().anyMatch(StudyMember::isLeader)) throw new DomainException(ErrorCode.DUPLICATE_STUDY_OWNER);;
+
+        StudyMember leader = StudyMember.createLeader(this, memberId);
+        this.members.add(leader);
+    }
+
+    private StudyMember getLeader(){
+        return members.stream().filter(StudyMember::isLeader).findFirst().orElse(null);
+    }
+
+    private void increaseMemberCount(){
+        this.currentCount += 1;
+
+        // if (isFull()) this.recruitStatus =  RecruitStatus.RECRUIT_END;
+    }
+
+    private void leaderLeave(Long memberId) {
+
+        // StudyMember 조회
+        StudyMember member = findStudyMemberByMemberId(memberId);
+
+        // members에서 제거
+        removeMember(member);
     }
 
     private void validChangeRole(StudyMember targetMember, StudyMember currentMember) {
@@ -329,14 +330,6 @@ public class StudyGroup extends BaseTimeEntity {
         if (this.operationStatus == OperationStatus.CLOSED) throw new DomainException(ErrorCode.CLOSE_STUDY_CANNOT_LEAVE);
     }
 
-
-//
-//    public void validateAccessible() {
-//        if (this.status == RecruitStatus.SUSPENDED) {
-//            throw new IllegalStateException("비활성 스터디는 접근할 수 없습니다.");
-//        }
-//    }
-//
 //    public void validateCanApply() {
 //        if (this.status != RecruitStatus.RECRUITING) {
 //            throw new IllegalStateException("모집중 상태에서만 가입 신청이 가능합니다.");
@@ -345,21 +338,5 @@ public class StudyGroup extends BaseTimeEntity {
 //            throw new IllegalStateException("가입 신청 마감일이 지났습니다.");
 //        }
 //    }
-//
-//    public void validateCanEdit(boolean isLeader) {
-//        if (!isLeader) throw new IllegalStateException("방장만 수정할 수 있습니다.");
-//        if (this.status == RecruitStatus.CLOSED) throw new IllegalStateException("종료된 스터디는 수정할 수 없습니다.");
-//    }
-//
-//    public void changeCapacity(int newCapacity) {
-//        if (newCapacity < this.currentCount) {
-//            throw new IllegalArgumentException("정원은 현재 인원 이상이어야 합니다.");
-//        }
-//        this.capacity = newCapacity;
-//        // 정원이 늘어나면 RECRUIT_END -> RECRUITING 가능(정책에 따라 방장이 상태 변경)
-//    }
-//
-//    public boolean isSuspended() {
-//        return this.status == RecruitStatus.SUSPENDED;
-//    }
+
 }

@@ -76,10 +76,18 @@ JoinRequest extends BaseTimeEntity {
         if (this.status != JoinRequestStatus.PENDING) throw new DomainException(ErrorCode.REQUEST_NOT_PENDING);
     }
 
-    public void cancel() {
-        if (this.status != JoinRequestStatus.PENDING) throw new IllegalStateException("대기 상태만 취소할 수 있습니다.");
+    public void cancel(Long currentMemberId) {
+
+        validCancel(currentMemberId);
         this.status = JoinRequestStatus.CANCELED;
         this.processedAt = LocalDateTime.now();
+    }
+
+    private void validCancel(Long currentMemberId) {
+
+        if (!this.requesterId.equals(currentMemberId)) throw new DomainException(ErrorCode.NOT_REQUEST_OWNER);
+
+        if (this.status != JoinRequestStatus.PENDING) throw new DomainException(ErrorCode.REQUEST_NOT_PENDING);
     }
 
 }
