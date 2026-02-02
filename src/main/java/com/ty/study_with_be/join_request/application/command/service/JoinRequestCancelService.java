@@ -1,9 +1,11 @@
 package com.ty.study_with_be.join_request.application.command.service;
 
+import com.ty.study_with_be.global.event.domain.DomainEvent;
 import com.ty.study_with_be.join_request.application.command.JoinRequestCancelUseCase;
 import com.ty.study_with_be.join_request.domain.JoinRequestRepository;
 import com.ty.study_with_be.join_request.domain.model.JoinRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class JoinRequestCancelService implements JoinRequestCancelUseCase {
 
     private final JoinRequestRepository joinRequestRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -25,5 +28,9 @@ public class JoinRequestCancelService implements JoinRequestCancelUseCase {
         joinRequest.cancel(currentMemberId);
 
         joinRequestRepository.save(joinRequest);
+
+        for (DomainEvent e : joinRequest.pullDomainEvents()) {
+            eventPublisher.publishEvent(e);
+        }
     }
 }

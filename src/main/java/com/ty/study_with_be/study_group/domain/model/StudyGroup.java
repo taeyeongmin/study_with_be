@@ -3,7 +3,11 @@ package com.ty.study_with_be.study_group.domain.model;
 import com.nimbusds.oauth2.sdk.util.StringUtils;
 import com.ty.study_with_be.global.entity.BaseTimeEntity;
 import com.ty.study_with_be.global.error.ErrorCode;
+import com.ty.study_with_be.global.event.domain.DomainEvent;
 import com.ty.study_with_be.global.exception.DomainException;
+import com.ty.study_with_be.study_group.domain.event.ChangeRoleEvent;
+import com.ty.study_with_be.study_group.domain.event.MemberKickEvent;
+import com.ty.study_with_be.study_group.domain.event.MemberLeaveEvent;
 import com.ty.study_with_be.study_group.domain.model.enums.*;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -14,7 +18,9 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static jakarta.persistence.FetchType.LAZY;
@@ -90,6 +96,9 @@ public class StudyGroup extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<StudyMember> members = new HashSet<>();
+
+    @Transient
+    private final List<DomainEvent> domainEvents = new ArrayList<>();
 
     public static StudyGroup create(
             String title,
@@ -226,7 +235,11 @@ public class StudyGroup extends BaseTimeEntity {
         validLeave(member);
         // members에서 제거
         removeMember(member);
+
+        this.raise(MemberLeaveEvent.of(studyGroupId,memberId));
     }
+
+
 
     public void transferLeaderAndLeave(Long targetStudyMemberId, Long currentMemberId) {
         changeRole(targetStudyMemberId, currentMemberId,StudyRole.LEADER);
@@ -243,6 +256,9 @@ public class StudyGroup extends BaseTimeEntity {
         validExpelMember(targetMember, currentMember);
 
         removeMember(targetMember);
+
+        this.raise(MemberKickEvent.of(studyGroupId, targetMember.getMemberId(),currentMemberId));
+
     }
 
     public void changeRole(Long targetStudyMemberId, Long currentMemberId, StudyRole role) {
@@ -255,10 +271,23 @@ public class StudyGroup extends BaseTimeEntity {
         validChangeRole(targetMember, currentMember);
 
         targetMember.changeRole(role);
+
+        this.raise(ChangeRoleEvent.of(studyGroupId, targetMember.getMemberId(),currentMemberId));
     }
 
     public boolean isLeader(Long memberId) {
         return getLeader().getMemberId().equals(memberId);
+    }
+
+    /**
+     * 이벤트를 꺼내면서 비움(중복 발행 방지)
+     */
+    public List<DomainEvent> pullDomainEvents() {
+
+        List<DomainEvent> events = new ArrayList<>(this.domainEvents);
+        this.domainEvents.clear();
+
+        return events;
     }
 
     private void addReader(Long memberId) {
@@ -328,6 +357,10 @@ public class StudyGroup extends BaseTimeEntity {
 
         // 스터디 상태 검증
         if (this.operationStatus == OperationStatus.CLOSED) throw new DomainException(ErrorCode.CLOSE_STUDY_CANNOT_LEAVE);
+    }
+
+    private void raise(DomainEvent event) {
+        this.domainEvents.add(event);
     }
 
 //    public void validateCanApply() {

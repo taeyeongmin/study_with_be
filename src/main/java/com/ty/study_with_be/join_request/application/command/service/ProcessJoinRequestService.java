@@ -1,6 +1,7 @@
 package com.ty.study_with_be.join_request.application.command.service;
 
 import com.ty.study_with_be.global.error.ErrorCode;
+import com.ty.study_with_be.global.event.domain.DomainEvent;
 import com.ty.study_with_be.global.exception.DomainException;
 import com.ty.study_with_be.join_request.application.command.ProcessJoinRequestUseCase;
 import com.ty.study_with_be.join_request.domain.JoinRequestRepository;
@@ -11,6 +12,7 @@ import com.ty.study_with_be.study_group.domain.model.StudyGroup;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,7 @@ public class ProcessJoinRequestService implements ProcessJoinRequestUseCase {
 
     private final GroupRepository groupRepository;
     private final JoinRequestRepository joinRequestRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -46,6 +49,10 @@ public class ProcessJoinRequestService implements ProcessJoinRequestUseCase {
             joinRequest.approve(processorId);
         } else {
             joinRequest.reject(processorId);
+        }
+
+        for (DomainEvent e : joinRequest.pullDomainEvents()) {
+            eventPublisher.publishEvent(e);
         }
     }
 
