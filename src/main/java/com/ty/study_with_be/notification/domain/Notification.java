@@ -3,10 +3,12 @@ package com.ty.study_with_be.notification.domain;
 import com.ty.study_with_be.global.entity.BaseTimeEntity;
 import com.ty.study_with_be.global.event.domain.EventType;
 import jakarta.persistence.*;
+import lombok.Getter;
 import org.hibernate.annotations.Comment;
 
 import java.time.LocalDateTime;
 
+@Getter
 @Entity
 @Table(
     name = "notification",
@@ -40,26 +42,26 @@ public class Notification extends BaseTimeEntity {
     @Comment("대상자 ID")
     private Long targetMemberId;
 
-    @Comment("알림 페이로드(JSON)")
-    @Column(nullable = false, columnDefinition = "json")
-    private String payload;
+    /** 사용자에게 보여줄 메시지 (닉네임 포함 스냅샷) */
+    @Column(nullable = false, length = 300)
+    private String content;
 
     @Comment("읽은 시간")
     private LocalDateTime readAt;
 
     public static Notification of(Long recipientMemberId,
-                                  com.ty.study_with_be.global.event.domain.EventType type,
+                                  EventType type,
                                   Long studyGroupId,
                                   Long actorMemberId,
                                   Long targetMemberId,
-                                  String payloadJson) {
+                                  String content) {
         Notification notification = new Notification();
         notification.recipientMemberId = recipientMemberId;
         notification.type = type;
         notification.studyGroupId = studyGroupId;
         notification.actorMemberId = actorMemberId;
         notification.targetMemberId = targetMemberId;
-        notification.payload = payloadJson;
+        notification.content = content;
         return notification;
     }
 }

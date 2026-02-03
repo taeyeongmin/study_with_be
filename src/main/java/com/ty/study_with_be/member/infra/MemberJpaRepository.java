@@ -3,8 +3,8 @@ package com.ty.study_with_be.member.infra;
 import com.ty.study_with_be.member.domain.model.Member;
 import com.ty.study_with_be.member.domain.model.AuthType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface MemberJpaRepository extends JpaRepository<Member, Long> {
@@ -16,4 +16,7 @@ public interface MemberJpaRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByLoginId(String loginId);
 
     Member findByMemberId(Long memberId);
+
+    @Query("select m.nickname from Member m where m.memberId = :memberId")
+    Optional<String> findNicknameById(Long memberId);
 }

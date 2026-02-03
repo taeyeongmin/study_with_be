@@ -30,7 +30,7 @@ public class OutboxNotificationHandler {
         OutboxEventHandler handler = handlerMap.get(type);
 
         if (handler == null) {
-            throw new IllegalArgumentException("Unsupported outbox event type: " + type);
+            throw new RuntimeException("지원하지 않는 유형입니다: " + type);
         }
         handler.handle(type, payloadJson);
     }

@@ -3,10 +3,13 @@ package com.ty.study_with_be.global.outbox.application.handler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ty.study_with_be.global.event.domain.EventType;
 import com.ty.study_with_be.global.outbox.application.dto.RoleChangePayload;
+import com.ty.study_with_be.global.outbox.application.support.MemberNicknameResolver;
+import com.ty.study_with_be.notification.application.event.NotificationCreatedEvent;
 import com.ty.study_with_be.notification.domain.Notification;
 import com.ty.study_with_be.notification.infra.NotificationJpaRepository;
 import com.ty.study_with_be.study_group.applicaiton.query.StudyGroupQueryRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -18,7 +21,9 @@ public class RoleChangeHandler implements OutboxEventHandler {
 
     private final ObjectMapper objectMapper;
     private final StudyGroupQueryRepository studyGroupQueryRepository;
+    private final MemberNicknameResolver nicknameResolver;
     private final NotificationJpaRepository notificationJpaRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public EventType getType() {
@@ -32,31 +37,27 @@ public class RoleChangeHandler implements OutboxEventHandler {
         Long processorId = payload.getProcessorId();
         Long targetMemberId = payload.getTargetMemberId();
 
+        String processorNickname = nicknameResolver.nicknameOf(processorId);
+        String targetNickname = nicknameResolver.nicknameOf(targetMemberId);
+        String content = String.format("[%s]님이 [%s]님의 역할을 변경했습니다.", processorNickname, targetNickname);
+
         // 대상자에게 알림
-        String toTarget = objectMapper.writeValueAsString(Map.of(
-            "type", type.name(),
-            "studyGroupId", studyGroupId,
-            "processorId", processorId,
-            "targetMemberId", targetMemberId
-        ));
-        notificationJpaRepository.save(
-            Notification.of(targetMemberId, type, studyGroupId, processorId, targetMemberId, toTarget)
+        Notification noti = notificationJpaRepository.save(
+                Notification.of(targetMemberId, type, studyGroupId, processorId, targetMemberId, content)
         );
+        eventPublisher.publishEvent(new NotificationCreatedEvent(noti.getId(), targetMemberId));
 
         // 관리자에게도 알림 (대상자 중복 제거)
-        List<Long> managers = studyGroupQueryRepository.findManagers(studyGroupId);
-        for (Long manager : managers) {
-            if (manager.equals(targetMemberId)) continue;
+        List<Long> recipients = studyGroupQueryRepository.findManagers(studyGroupId);
 
-            String managerPayload = objectMapper.writeValueAsString(Map.of(
-                "type", type.name(),
-                "studyGroupId", studyGroupId,
-                "processorId", processorId,
-                "targetMemberId", targetMemberId
-            ));
-            notificationJpaRepository.save(
-                Notification.of(manager, type, studyGroupId, processorId, targetMemberId, managerPayload)
+        for (Long recipient : recipients) {
+            if (recipient.equals(targetMemberId)) continue;
+
+            Notification noti2 = notificationJpaRepository.save(
+                    Notification.of(recipient, type, studyGroupId, processorId, targetMemberId, content)
             );
+
+            eventPublisher.publishEvent(new NotificationCreatedEvent(noti2.getId(), recipient));
         }
     }
 }
