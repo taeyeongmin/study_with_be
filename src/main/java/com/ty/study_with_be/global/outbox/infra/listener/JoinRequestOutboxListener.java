@@ -7,19 +7,16 @@ import com.ty.study_with_be.global.outbox.infra.repository.OutboxEventRepository
 import com.ty.study_with_be.join_request.domain.event.JoinCancelEvent;
 import com.ty.study_with_be.join_request.domain.event.JoinProcessEvent;
 import com.ty.study_with_be.join_request.domain.event.JoinRequestEvent;
+import com.ty.study_with_be.global.outbox.application.dto.JoinProcessPayload;
+import com.ty.study_with_be.global.outbox.application.dto.JoinRequestPayload;
 import com.ty.study_with_be.join_request.domain.model.enums.JoinRequestStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import java.util.Map;
-
 @Component
 @RequiredArgsConstructor
-@Transactional(propagation = Propagation.REQUIRES_NEW)
 public class JoinRequestOutboxListener {
 
     private final OutboxEventRepository outboxEventRepository;
@@ -32,10 +29,11 @@ public class JoinRequestOutboxListener {
     public void onJoinProcess(JoinProcessEvent event) throws Exception {
 
         String payloadJson = objectMapper.writeValueAsString(
-                Map.of(
-                        "studyGroupId", event.getStudyGroupId(),
-                        "requesterMemberId", event.getRequesterMemberId()
-                )
+            JoinProcessPayload.of(
+                event.getStudyGroupId(),
+                event.getRequesterMemberId(),
+                event.getProcessorId()
+            )
         );
 
         EventType eventType;
@@ -61,10 +59,10 @@ public class JoinRequestOutboxListener {
     public void onJoinRequestCancel(JoinCancelEvent event) throws Exception {
 
         String payloadJson = objectMapper.writeValueAsString(
-                Map.of(
-                        "studyGroupId", event.getStudyGroupId(),
-                        "requesterMemberId", event.getRequesterMemberId()
-                )
+            JoinRequestPayload.of(
+                event.getStudyGroupId(),
+                event.getRequesterMemberId()
+            )
         );
 
         OutboxEvent outbox = OutboxEvent.pending(
@@ -82,9 +80,9 @@ public class JoinRequestOutboxListener {
     public void onJoinRequest(JoinRequestEvent event) throws Exception {
 
         String payloadJson = objectMapper.writeValueAsString(
-            Map.of(
-                "studyGroupId", event.getStudyGroupId(),
-                "requesterMemberId", event.getRequesterMemberId()
+            JoinRequestPayload.of(
+                event.getStudyGroupId(),
+                event.getRequesterMemberId()
             )
         );
 

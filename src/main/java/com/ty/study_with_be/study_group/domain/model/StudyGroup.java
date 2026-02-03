@@ -13,6 +13,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -27,12 +28,12 @@ import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Table(
-        name = "study_group",
-        indexes = {
-                @Index(name = "idx_study_group_created_at", columnList = "created_at"),
-                @Index(name = "idx_study_group_category", columnList = "category"),
-                @Index(name = "idx_study_group_region", columnList = "region")
-        }
+    name = "study_group",
+    indexes = {
+        @Index(name = "idx_study_group_created_at", columnList = "created_at"),
+        @Index(name = "idx_study_group_category", columnList = "category"),
+        @Index(name = "idx_study_group_region", columnList = "region")
+    }
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -40,58 +41,72 @@ public class StudyGroup extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Comment("스터디 그룹 PK")
     private Long studyGroupId;
 
     @Column(name = "owner_id", nullable = false)
+    @Comment("방장 회원PK")
     private Long ownerId;
 
     @Column(name = "title", nullable = false, length = 60)
+    @Comment("스터디 타이틀")
     private String title;
 
     @Column(name = "category", nullable = false, length = 30)
-    private String category; // 초기엔 문자열(추후 Category Entity/Enum 확장)
+    @Comment("카테고리")
+    private String category;
 
     @Column(name = "topic", nullable = false, length = 60)
+    @Comment("주제")
     private String topic;
 
     @Column(name = "region", length = 60)
+    @Comment("지역")
     private String region;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "study_mode", nullable = false, length = 10)
+    @Comment("온/오프라인")
     private StudyMode studyMode;
 
     @Column(name = "capacity", nullable = false)
+    @Comment("정원")
     private int capacity;
 
     @Column(name = "current_count", nullable = false)
+    @Comment("현재 인원")
     private int currentCount;
 
     @Lob
     @Column(name = "description", nullable = false)
+    @Comment("설명")
     private String description;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "recruit_status", nullable = false, length = 15)
+    @Comment("모집 상태")
     private RecruitStatus recruitStatus;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "operation_status", nullable = false, length = 15)
+    @Comment("운영 상태")
     private OperationStatus operationStatus;
 
     @Column(name = "apply_deadline_at")
+    @Comment("신청 마감일")
     private LocalDate applyDeadlineAt;
 
     @Enumerated(EnumType.STRING)
+    @Comment("일정 유형")
     private SchedulingType schedulingType;
 
     @ElementCollection(fetch = LAZY)
     @CollectionTable(
-            name = "study_group_schedule",
-            joinColumns = @JoinColumn(name = "study_group_id")
-
+        name = "study_group_schedule",
+        joinColumns = @JoinColumn(name = "study_group_id")
     )
     @OnDelete(action = OnDeleteAction.CASCADE)
+    @Comment("진행 예정 요일")
     private Set<DayOfWeek> schedules;
 
     @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -101,16 +116,16 @@ public class StudyGroup extends BaseTimeEntity {
     private final List<DomainEvent> domainEvents = new ArrayList<>();
 
     public static StudyGroup create(
-            String title,
-            String category,
-            String topic,
-            String region,
-            StudyMode studyMode,
-            int capacity,
-            String description,
-            LocalDate applyDeadlineAt,
-            Set<DayOfWeek> schedules,
-            Long memberId
+        String title,
+        String category,
+        String topic,
+        String region,
+        StudyMode studyMode,
+        int capacity,
+        String description,
+        LocalDate applyDeadlineAt,
+        Set<DayOfWeek> schedules,
+        Long memberId
     ) {
         if (capacity < 2) throw new DomainException(ErrorCode.INVALID_STUDY_CAPACITY);
         if (studyMode == StudyMode.OFFLINE && StringUtils.isBlank(region)) throw new DomainException(ErrorCode.OFFLINE_STUDY_REGION_REQUIRED);
@@ -142,7 +157,7 @@ public class StudyGroup extends BaseTimeEntity {
 
         StudyMember newMember = StudyMember.createMember(this, requesterId);
 
-        if (this.members.contains(newMember)) throw new  DomainException(ErrorCode.ALREADY_JOINED_MEMBER);
+        if (this.members.contains(newMember)) throw new DomainException(ErrorCode.ALREADY_JOINED_MEMBER);
 
         this.members.add(newMember);
         increaseMemberCount();
@@ -159,12 +174,12 @@ public class StudyGroup extends BaseTimeEntity {
         if (isFull()) throw new DomainException(ErrorCode.CAPACITY_EXCEEDED);
     }
 
-    public void updateInfo(String title, String category, String topic, String region,  StudyMode studyMode, int capacity, String description, LocalDate applyDeadlineAt, Set<DayOfWeek> schedules,Long memberId) {
+    public void updateInfo(String title, String category, String topic, String region, StudyMode studyMode, int capacity, String description, LocalDate applyDeadlineAt, Set<DayOfWeek> schedules, Long memberId) {
 
         if (!isLeader(memberId)) throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
 
         if (studyMode == StudyMode.OFFLINE && StringUtils.isBlank(region))
-            throw new DomainException(ErrorCode.OFFLINE_STUDY_REGION_REQUIRED);;
+            throw new DomainException(ErrorCode.OFFLINE_STUDY_REGION_REQUIRED);
 
         this.title = title;
         this.category = category;
@@ -214,17 +229,17 @@ public class StudyGroup extends BaseTimeEntity {
     }
 
     public StudyMember findStudyMemberByStudyMemberId(Long studyMemberId) {
-        
+
         return this.members.stream()
-                .filter(member -> member.isSameMemberByStudyMemberId(studyMemberId))
-                .findFirst().orElseThrow(()-> new DomainException(ErrorCode.NOT_GROUP_MEMBER));
+            .filter(member -> member.isSameMemberByStudyMemberId(studyMemberId))
+            .findFirst().orElseThrow(() -> new DomainException(ErrorCode.NOT_GROUP_MEMBER));
     }
 
     public StudyMember findStudyMemberByMemberId(Long memberId) {
 
         return this.members.stream()
-                .filter(member -> member.isSameMemberByMemberId(memberId))
-                .findFirst().orElseThrow(()-> new DomainException(ErrorCode.NOT_GROUP_MEMBER));
+            .filter(member -> member.isSameMemberByMemberId(memberId))
+            .findFirst().orElseThrow(() -> new DomainException(ErrorCode.NOT_GROUP_MEMBER));
     }
 
     public void leave(Long memberId) {
@@ -236,28 +251,27 @@ public class StudyGroup extends BaseTimeEntity {
         // members에서 제거
         removeMember(member);
 
-        this.raise(MemberLeaveEvent.of(studyGroupId,memberId));
+        this.raise(MemberLeaveEvent.of(studyGroupId, memberId));
     }
 
 
-
     public void transferLeaderAndLeave(Long targetStudyMemberId, Long currentMemberId) {
-        changeRole(targetStudyMemberId, currentMemberId,StudyRole.LEADER);
+        changeRole(targetStudyMemberId, currentMemberId, StudyRole.LEADER);
         leaderLeave(currentMemberId);
     }
 
     public void expelMember(Long targetMemberId, long currentMemberId) {
-        
-        // 현재 유저와 강퇴 대상 유저 조회
+
+        // 현재 멤버 및 강퇴 대상 조회
         StudyMember currentMember = findStudyMemberByMemberId(currentMemberId);
         StudyMember targetMember = findStudyMemberByStudyMemberId(targetMemberId);
 
-        // 규칙 검증
+        // 정책 검증
         validExpelMember(targetMember, currentMember);
 
         removeMember(targetMember);
 
-        this.raise(MemberKickEvent.of(studyGroupId, targetMember.getMemberId(),currentMemberId));
+        this.raise(MemberKickEvent.of(studyGroupId, targetMember.getMemberId(), currentMemberId));
 
     }
 
@@ -266,13 +280,13 @@ public class StudyGroup extends BaseTimeEntity {
         // studyMember 조회
         StudyMember targetMember = findStudyMemberByStudyMemberId(targetStudyMemberId);
         StudyMember currentMember = findStudyMemberByMemberId(currentMemberId);
-        
-        // 규칙 검증
+
+        // 정책 검증
         validChangeRole(targetMember, currentMember);
 
         targetMember.changeRole(role);
 
-        this.raise(ChangeRoleEvent.of(studyGroupId, targetMember.getMemberId(),currentMemberId));
+        this.raise(ChangeRoleEvent.of(studyGroupId, targetMember.getMemberId(), currentMemberId));
     }
 
     public boolean isLeader(Long memberId) {
@@ -280,7 +294,7 @@ public class StudyGroup extends BaseTimeEntity {
     }
 
     /**
-     * 이벤트를 꺼내면서 비움(중복 발행 방지)
+     * 이벤트를 꺼내면서 비운다(중복 발행 방지).
      */
     public List<DomainEvent> pullDomainEvents() {
 
@@ -293,20 +307,20 @@ public class StudyGroup extends BaseTimeEntity {
     private void addReader(Long memberId) {
 
         if (memberId == null) throw new DomainException(ErrorCode.STUDY_OWNER_REQUIRED);
-        if (this.members.stream().anyMatch(StudyMember::isLeader)) throw new DomainException(ErrorCode.DUPLICATE_STUDY_OWNER);;
+        if (this.members.stream().anyMatch(StudyMember::isLeader)) throw new DomainException(ErrorCode.DUPLICATE_STUDY_OWNER);
 
         StudyMember leader = StudyMember.createLeader(this, memberId);
         this.members.add(leader);
     }
 
-    private StudyMember getLeader(){
+    private StudyMember getLeader() {
         return members.stream().filter(StudyMember::isLeader).findFirst().orElse(null);
     }
 
-    private void increaseMemberCount(){
+    private void increaseMemberCount() {
         this.currentCount += 1;
 
-        // if (isFull()) this.recruitStatus =  RecruitStatus.RECRUIT_END;
+        // if (isFull()) this.recruitStatus = RecruitStatus.RECRUIT_END;
     }
 
     private void leaderLeave(Long memberId) {
@@ -319,17 +333,15 @@ public class StudyGroup extends BaseTimeEntity {
     }
 
     private void validChangeRole(StudyMember targetMember, StudyMember currentMember) {
-        
+
         // 방장 체크
         if (!isLeader(currentMember.getMemberId())) throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
 
-        // 셀프 변경 체크
+        // 대상 변경 체크
         if (currentMember.equals(targetMember)) throw new DomainException(ErrorCode.CANNOT_SELF_PROC);
-        // 그룹에 속한 회원인지 체크는 꺼낼 때 알아서 되니 패스.
 
-        // 진행중인 스터인지 상태 체크
+        // 진행 중인 스터디 상태 체크
         if (this.operationStatus == OperationStatus.CLOSED) throw new DomainException(ErrorCode.CLOSE_STUDY_CANNOT_PROC);
-
     }
 
 
@@ -338,7 +350,7 @@ public class StudyGroup extends BaseTimeEntity {
         this.members.remove(member);
         if (this.currentCount <= 1) throw new IllegalStateException("현재 인원 감소 불가");
         this.currentCount--;
-        // 인원이 빠지면 다시 모집중 전환 가능한 정책(방장 전환) - 여기선 자동 전환 안함
+        // 인원이 비면 다시 모집중으로 전환 가능성 고려(방장 전환) - 현재는 자동 전환 안 함
     }
 
     private void validLeave(StudyMember member) {
@@ -347,29 +359,19 @@ public class StudyGroup extends BaseTimeEntity {
         if (this.operationStatus == OperationStatus.CLOSED) throw new DomainException(ErrorCode.CLOSE_STUDY_CANNOT_LEAVE);
     }
 
-    private void validExpelMember(StudyMember  targetMember, StudyMember currentMember) {
+    private void validExpelMember(StudyMember targetMember, StudyMember currentMember) {
 
         // self 강퇴 검증
         if (currentMember.equals(targetMember)) throw new DomainException(ErrorCode.CANNOT_SELF_KICK);
 
-        // 권한에 대한 검증
+        // 권한 체크
         if (!currentMember.canKick(targetMember)) throw new DomainException(ErrorCode.HAS_NOT_PERMISSION);
 
-        // 스터디 상태 검증
+        // 스터디 상태 체크
         if (this.operationStatus == OperationStatus.CLOSED) throw new DomainException(ErrorCode.CLOSE_STUDY_CANNOT_LEAVE);
     }
 
     private void raise(DomainEvent event) {
         this.domainEvents.add(event);
     }
-
-//    public void validateCanApply() {
-//        if (this.status != RecruitStatus.RECRUITING) {
-//            throw new IllegalStateException("모집중 상태에서만 가입 신청이 가능합니다.");
-//        }
-//        if (applyDeadlineAt != null && LocalDate.now().isAfter(applyDeadlineAt)) {
-//            throw new IllegalStateException("가입 신청 마감일이 지났습니다.");
-//        }
-//    }
-
 }

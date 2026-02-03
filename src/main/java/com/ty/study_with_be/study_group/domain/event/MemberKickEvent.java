@@ -10,14 +10,14 @@ import java.util.UUID;
 public class MemberKickEvent extends DomainEvent {
 
     private final Long studyGroupId;
-    private final Long leaveMemberId;
+    private final Long targetMemberId;
     private final Long processorMemberId;
 
     public MemberKickEvent(Long studyGroupId, Long leaveMemberId, Long processorMemberId) {
         this.eventId = UUID.randomUUID().toString();
         this.createdAt = LocalDateTime.now();
         this.studyGroupId = studyGroupId;
-        this.leaveMemberId = leaveMemberId;
+        this.targetMemberId = leaveMemberId;
         this.processorMemberId = processorMemberId;
     }
 

@@ -216,6 +216,18 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
                 .getResultList();
     }
 
+    public List<Long> findManagers(Long studyGroupId) {
+        return em.createQuery("""
+            select sm.memberId
+            from StudyMember sm
+            where sm.studyGroup.studyGroupId = :groupId
+              and sm.role in (:roles)
+        """, Long.class)
+                .setParameter("groupId", studyGroupId)
+                .setParameter("roles", List.of(StudyRole.LEADER, StudyRole.MANAGER))
+                .getResultList();
+    }
+
 
     @Override
     public boolean existsMember(Long studyGroupId, Long memberId) {

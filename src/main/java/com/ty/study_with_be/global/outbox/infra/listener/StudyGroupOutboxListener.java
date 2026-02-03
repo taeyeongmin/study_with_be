@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ty.study_with_be.global.event.domain.EventType;
 import com.ty.study_with_be.global.outbox.domain.OutboxEvent;
 import com.ty.study_with_be.global.outbox.infra.repository.OutboxEventRepository;
+import com.ty.study_with_be.global.outbox.application.dto.MemberKickPayload;
+import com.ty.study_with_be.global.outbox.application.dto.MemberLeavePayload;
+import com.ty.study_with_be.global.outbox.application.dto.RoleChangePayload;
 import com.ty.study_with_be.study_group.domain.event.ChangeRoleEvent;
 import com.ty.study_with_be.study_group.domain.event.MemberKickEvent;
 import com.ty.study_with_be.study_group.domain.event.MemberLeaveEvent;
@@ -11,8 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-
-import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -25,19 +26,16 @@ public class StudyGroupOutboxListener {
     /**
      * 스터디 그룹 멤버 role 변경
      */
-
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void onChangeRole(ChangeRoleEvent event) throws Exception {
 
         String payloadJson = objectMapper.writeValueAsString(
-                Map.of(
-                        "studyGroupId", event.getStudyGroupId(),
-                        "leaveMemberId", event.getTargetMemberId(),
-                        "processorId", event.getProcessorMemberId()
-                )
+            RoleChangePayload.of(
+                event.getStudyGroupId(),
+                event.getProcessorMemberId(),
+                event.getTargetMemberId()
+            )
         );
-
-        int a = 2;
 
         OutboxEvent outbox = OutboxEvent.pending(
                 EventType.ROLE_CHANGE,
@@ -54,11 +52,11 @@ public class StudyGroupOutboxListener {
     public void onKickMember(MemberKickEvent event) throws Exception {
 
         String payloadJson = objectMapper.writeValueAsString(
-                Map.of(
-                        "studyGroupId", event.getStudyGroupId(),
-                        "leaveMemberId", event.getLeaveMemberId(),
-                        "processorId", event.getProcessorMemberId()
-                )
+            MemberKickPayload.of(
+                event.getStudyGroupId(),
+                event.getProcessorMemberId(),
+                event.getTargetMemberId()
+            )
         );
 
         OutboxEvent outbox = OutboxEvent.pending(
@@ -76,10 +74,10 @@ public class StudyGroupOutboxListener {
     public void onLeaveMember(MemberLeaveEvent event) throws Exception {
 
         String payloadJson = objectMapper.writeValueAsString(
-                Map.of(
-                        "studyGroupId", event.getStudyGroupId(),
-                        "leaveMemberId", event.getLeaveMemberId()
-                )
+            MemberLeavePayload.of(
+                event.getStudyGroupId(),
+                event.getLeaveMemberId()
+            )
         );
 
         OutboxEvent outbox = OutboxEvent.pending(

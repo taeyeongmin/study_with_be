@@ -26,4 +26,6 @@ public interface StudyGroupQueryRepository {
     boolean hasManagerRole(Long studyGroupId, Long viewerMemberId);
 
     List<StudyMemberItem> findStudyMemberList(Long studyGroupId);
+
+    List<Long> findManagers(Long studyGroupId);
 }

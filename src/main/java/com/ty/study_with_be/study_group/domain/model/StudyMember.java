@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Comment;
 
 import java.util.Objects;
 
@@ -25,21 +26,26 @@ import java.util.Objects;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class StudyMember extends BaseTimeEntity {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Comment("스터디 멤버 PK")
     private Long studyMemberId;
 
     @Column(name = "member_id", nullable = false)
+    @Comment("회원 PK")
     private Long memberId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "study_group_id", nullable = false)
+    @Comment("스터디 그룹 ID")
     private StudyGroup studyGroup;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 10)
+    @Comment("멤버 역할")
     private StudyRole role;
 
-    public boolean hasManageRole(){
+    public boolean hasManageRole() {
         return role == StudyRole.LEADER || role == StudyRole.MANAGER;
     }
 
@@ -72,7 +78,9 @@ public class StudyMember extends BaseTimeEntity {
         this.role = role;
     }
 
-    public boolean isLeader() { return this.role == StudyRole.LEADER; }
+    public boolean isLeader() {
+        return this.role == StudyRole.LEADER;
+    }
 
     @Override
     public boolean equals(Object o) {

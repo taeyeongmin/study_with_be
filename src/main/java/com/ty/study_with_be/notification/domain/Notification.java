@@ -3,6 +3,7 @@ package com.ty.study_with_be.notification.domain;
 import com.ty.study_with_be.global.entity.BaseTimeEntity;
 import com.ty.study_with_be.global.event.domain.EventType;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Comment;
 
 import java.time.LocalDateTime;
 
@@ -18,30 +19,47 @@ public class Notification extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Comment("알림 PK")
     private Long id;
 
-    /** 수신자 */
+    @Comment("수신자")
     @Column(nullable = false)
     private Long recipientMemberId;
 
-    /** 알림 유형 */
+    @Comment("이벤트 유형")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
     private EventType type;
 
-    /** 관련 스터디 그룹 */
+    @Comment("관련 스터디 그룹")
     private Long studyGroupId;
 
-    /** 행위자 (누가 이 이벤트를 발생시켰는지) */
+    @Comment("행위자 ID")
     private Long actorMemberId;
 
-    /** 대상자 (강퇴당한 사람, 역할 변경 대상 등) */
+    @Comment("대상자 ID")
     private Long targetMemberId;
 
-    /** FE 렌더링용 데이터 (title, groupName 등) */
+    @Comment("알림 페이로드(JSON)")
     @Column(nullable = false, columnDefinition = "json")
     private String payload;
 
-    /** 읽음 시각 */
+    @Comment("읽은 시간")
     private LocalDateTime readAt;
+
+    public static Notification of(Long recipientMemberId,
+                                  com.ty.study_with_be.global.event.domain.EventType type,
+                                  Long studyGroupId,
+                                  Long actorMemberId,
+                                  Long targetMemberId,
+                                  String payloadJson) {
+        Notification notification = new Notification();
+        notification.recipientMemberId = recipientMemberId;
+        notification.type = type;
+        notification.studyGroupId = studyGroupId;
+        notification.actorMemberId = actorMemberId;
+        notification.targetMemberId = targetMemberId;
+        notification.payload = payloadJson;
+        return notification;
+    }
 }
