@@ -258,6 +258,8 @@ public class StudyGroup extends BaseTimeEntity {
     public void transferLeaderAndLeave(Long targetStudyMemberId, Long currentMemberId) {
         changeRole(targetStudyMemberId, currentMemberId, StudyRole.LEADER);
         leaderLeave(currentMemberId);
+
+        this.raise(MemberLeaveEvent.of(studyGroupId, currentMemberId));
     }
 
     public void expelMember(Long targetMemberId, long currentMemberId) {
