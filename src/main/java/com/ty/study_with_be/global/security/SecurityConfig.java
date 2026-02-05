@@ -66,6 +66,7 @@ public class SecurityConfig {
                         .requestMatchers("/oauth2/**", "/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/study_group/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/common-code/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/swagger-ui/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 // JWT만 사용하므로 서버 세션은 생성하지 않음.
