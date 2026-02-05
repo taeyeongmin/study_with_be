@@ -1,7 +1,7 @@
-package com.ty.study_with_be.notification.application.strategy.registry;
+package com.ty.study_with_be.notification.application.command.strategy.registry;
 
-import com.ty.study_with_be.notification.application.strategy.recipient.RecipientStrategy;
-import com.ty.study_with_be.notification.application.strategy.recipient.RecipientType;
+import com.ty.study_with_be.notification.application.command.strategy.recipient.RecipientStrategy;
+import com.ty.study_with_be.notification.application.command.strategy.recipient.RecipientType;
 import org.springframework.stereotype.Component;
 
 import java.util.EnumMap;

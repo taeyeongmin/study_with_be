@@ -1,7 +1,7 @@
-package com.ty.study_with_be.notification.application.strategy;
+package com.ty.study_with_be.notification.application.command.strategy;
 
-import com.ty.study_with_be.notification.application.message.NotificationMessageComposer;
-import com.ty.study_with_be.notification.application.strategy.recipient.RecipientStrategy;
+import com.ty.study_with_be.notification.application.command.message.NotificationMessageComposer;
+import com.ty.study_with_be.notification.application.command.strategy.recipient.RecipientStrategy;
 
 import java.util.HashSet;
 import java.util.List;

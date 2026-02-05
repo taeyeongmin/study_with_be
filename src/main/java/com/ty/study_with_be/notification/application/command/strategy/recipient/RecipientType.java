@@ -1,4 +1,4 @@
-package com.ty.study_with_be.notification.application.strategy.recipient;
+package com.ty.study_with_be.notification.application.command.strategy.recipient;
 
 /**
  * 알림 대상에 타입을 관리

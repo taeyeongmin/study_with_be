@@ -1,6 +1,6 @@
-package com.ty.study_with_be.notification.application.listener;
+package com.ty.study_with_be.notification.application.command.listener;
 
-import com.ty.study_with_be.notification.application.handler.NotificationCreatedEvent;
+import com.ty.study_with_be.notification.application.command.handler.NotificationCreatedEvent;
 import com.ty.study_with_be.notification.domain.Notification;
 import com.ty.study_with_be.notification.infra.NotificationJpaRepository;
 import com.ty.study_with_be.notification.infra.sse.NotificationSsePublisher;

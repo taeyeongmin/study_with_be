@@ -1,4 +1,4 @@
-package com.ty.study_with_be.notification.application.message;
+package com.ty.study_with_be.notification.application.command.message;
 
 import com.ty.study_with_be.global.event.domain.EventType;
 import lombok.Getter;

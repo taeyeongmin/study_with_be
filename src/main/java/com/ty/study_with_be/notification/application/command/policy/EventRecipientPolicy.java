@@ -1,7 +1,7 @@
-package com.ty.study_with_be.notification.application.policy;
+package com.ty.study_with_be.notification.application.command.policy;
 
 import com.ty.study_with_be.global.event.domain.EventType;
-import com.ty.study_with_be.notification.application.strategy.recipient.RecipientType;
+import com.ty.study_with_be.notification.application.command.strategy.recipient.RecipientType;
 import org.springframework.stereotype.Component;
 
 import java.util.EnumMap;

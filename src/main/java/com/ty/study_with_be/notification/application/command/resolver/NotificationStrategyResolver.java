@@ -1,13 +1,12 @@
-package com.ty.study_with_be.notification.application.resolver;
+package com.ty.study_with_be.notification.application.command.resolver;
 
-import com.ty.study_with_be.notification.application.message.NotificationMessageComposer;
-import com.ty.study_with_be.notification.application.message.NotificationMessageTemplate;
-import com.ty.study_with_be.notification.application.policy.EventRecipientPolicy;
-import com.ty.study_with_be.notification.application.strategy.NotificationContext;
-import com.ty.study_with_be.notification.application.strategy.StrategyHolder;
-import com.ty.study_with_be.notification.application.strategy.recipient.RecipientStrategy;
-import com.ty.study_with_be.notification.application.strategy.recipient.RecipientType;
-import com.ty.study_with_be.notification.application.strategy.registry.RecipientStrategyRegistry;
+import com.ty.study_with_be.notification.application.command.message.NotificationMessageComposer;
+import com.ty.study_with_be.notification.application.command.policy.EventRecipientPolicy;
+import com.ty.study_with_be.notification.application.command.strategy.NotificationContext;
+import com.ty.study_with_be.notification.application.command.strategy.StrategyHolder;
+import com.ty.study_with_be.notification.application.command.strategy.recipient.RecipientStrategy;
+import com.ty.study_with_be.notification.application.command.strategy.recipient.RecipientType;
+import com.ty.study_with_be.notification.application.command.strategy.registry.RecipientStrategyRegistry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

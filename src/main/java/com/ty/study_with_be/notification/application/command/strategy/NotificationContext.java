@@ -1,4 +1,4 @@
-package com.ty.study_with_be.notification.application.strategy;
+package com.ty.study_with_be.notification.application.command.strategy;
 
 import com.ty.study_with_be.global.event.domain.EventType;
 import com.ty.study_with_be.global.outbox.application.dto.OutboxPayload;
