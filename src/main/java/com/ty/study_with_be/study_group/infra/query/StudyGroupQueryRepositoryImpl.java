@@ -216,6 +216,7 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
                 .getResultList();
     }
 
+    @Override
     public List<Long> findManagers(Long studyGroupId) {
         return em.createQuery("""
             select sm.memberId
@@ -226,6 +227,50 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
                 .setParameter("groupId", studyGroupId)
                 .setParameter("roles", List.of(StudyRole.LEADER, StudyRole.MANAGER))
                 .getResultList();
+    }
+
+    @Override
+    public List<Long> findAllMember(Long studyGroupId) {
+        return em.createQuery("""
+            select sm.memberId
+            from StudyMember sm
+            where sm.studyGroup.studyGroupId = :groupId
+              and sm.role in (:roles)
+        """, Long.class)
+                .setParameter("groupId", studyGroupId)
+                .setParameter("roles", List.of(StudyRole.LEADER, StudyRole.MANAGER,StudyRole.MEMBER))
+                .getResultList();
+    }
+
+    @Override
+    public List<Long> findManagersAndTarget(Long studyGroupId, Long targetId) {
+
+        return em.createQuery("""
+            select sm.memberId
+            from StudyMember sm
+            where sm.studyGroup.studyGroupId = :groupId
+              and sm.role in (:roles)
+              or sm.memberId = :targetId
+        """, Long.class)
+                .setParameter("groupId", studyGroupId)
+                .setParameter("targetId", targetId)
+                .setParameter("roles", List.of(StudyRole.LEADER, StudyRole.MANAGER))
+                .getResultList();
+    }
+
+    @Override
+    public Optional<Long> findLeaderId(Long studyGroupId) {
+        List<Long> resultList = em.createQuery("""
+                            select sm.memberId
+                            from StudyMember sm
+                            where sm.studyGroup.studyGroupId = :groupId
+                              and sm.role in (:roles)
+                        """, Long.class)
+                .setParameter("groupId", studyGroupId)
+                .setParameter("roles", List.of(StudyRole.LEADER))
+                .getResultList();
+
+        return resultList.stream().findFirst();
     }
 
 

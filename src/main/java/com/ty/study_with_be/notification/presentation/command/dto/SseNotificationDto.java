@@ -5,6 +5,16 @@ import com.ty.study_with_be.notification.domain.Notification;
 
 import java.time.LocalDateTime;
 
+/**
+ * SSE 발송에 대한 응답 객체 
+ * 
+ * @param id
+ * @param type
+ * @param title
+ * @param message
+ * @param read
+ * @param createdAt
+ */
 public record SseNotificationDto(
         Long id,
         EventType type,

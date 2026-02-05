@@ -7,8 +7,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
-public class
-JoinCancelEvent extends DomainEvent {
+public class JoinCancelEvent extends DomainEvent {
 
     private final Long studyGroupId;
     private final Long requesterMemberId;

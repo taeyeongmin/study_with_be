@@ -12,6 +12,7 @@ public class OutboxProcessor {
     /**
      * drain: 더 이상 처리할 것이 없을 때까지 batch 반복
      * - 스케줄러에서 호출
+     * - outbox 이벤트 조회 후 이벤트 처리 명령
      */
     public void drainOnce() {
 
