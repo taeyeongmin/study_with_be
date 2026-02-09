@@ -8,6 +8,7 @@ import com.ty.study_with_be.member.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -24,7 +25,9 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberService memberService;
-    private static final String REDIRECT_URL = "http://localhost:3000/auth/popup-callback";
+
+    @Value("${kakao.redirect-url}")
+    private String REDIRECT_URL;
 
     @Override
     public void onAuthenticationSuccess(

@@ -38,24 +38,15 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
                 user.getAuthorities()
         );
 
-        // HttpOnly 쿠키 생성
-        Cookie cookie = new Cookie("ACCESS_TOKEN", accessToken);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(60 * 60);
-
-        // secure 옵션은 배포 환경에서 true
-        cookie.setSecure(false);
-
-        response.addCookie(cookie);
-
         // 응답 바디(JSON)
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
 
         Map<String, Object> body = Map.of(
                 "memberId", user.getLoginId(),
                 "nickname", user.getNickname(),
-                "message", "로그인 성공"
+                "message", "로그인 성공",
+                "accessToken", accessToken
         );
 
         response.getWriter().write(objectMapper.writeValueAsString(body));

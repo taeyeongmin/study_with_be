@@ -32,7 +32,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         String token = CookieUtils.getCookieValue(request, ACCESS_TOKEN_COOKIE);
 
-        if (token != null && jwtTokenProvider.validateToken(token)) {
+//        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+//            filterChain.doFilter(request, response);
+//            return;
+//        }
+//
+//        String token = request.getHeader("Authorization");
+
+        System.out.println(">>> METHOD = " + request.getMethod());
+        System.out.println(">>> URI = " + request.getRequestURI());
+        System.out.println(">>> Authorization = " + request.getHeader("Authorization"));
+
+        if (token != null && jwtTokenProvider.validateToken(token)){
+//        if (token != null && token.startsWith("Bearer ") && jwtTokenProvider.validateToken(token)) {
             Authentication authentication = jwtTokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
