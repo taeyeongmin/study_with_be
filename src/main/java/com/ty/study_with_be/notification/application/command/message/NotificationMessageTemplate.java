@@ -16,6 +16,11 @@ public enum NotificationMessageTemplate {
             "/study-groups/%d",
             new ParamSource[]{ParamSource.REQUESTER}),
 
+    JOIN_CANCEL(EventType.JOIN_CANCEL,
+            "[%s]님이 스터디 가입 요청을 취소 했어요.",
+            "/study-groups/%d",
+            new ParamSource[]{ParamSource.REQUESTER}),
+
     GROUP_LEAVED(EventType.MEMBER_LEAVE,
             "[%s]님이 스터디를 탈퇴했어요.",
             "/study-groups/%d",

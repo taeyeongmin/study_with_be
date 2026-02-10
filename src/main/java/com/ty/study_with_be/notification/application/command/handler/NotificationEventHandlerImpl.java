@@ -37,6 +37,9 @@ public class NotificationEventHandlerImpl implements NotificationEventHandler {
         // 알림을 날릴 memberId 조회
         Set<Long> recipientIds = resolve.getRecipientIds(context);
 
+        // 본인 제외
+        recipientIds.remove(context.getProcessMemberId());
+
         // 메세지 생성
         String message = resolve.createMessage(context);
 

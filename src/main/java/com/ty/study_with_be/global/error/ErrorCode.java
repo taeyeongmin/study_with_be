@@ -47,8 +47,8 @@ public enum ErrorCode {
     INVALID_REQUEST_PRECESS_STATUS(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.invalid_precess_status"),
     NOT_REQUEST_OWNER(HttpStatus.UNPROCESSABLE_ENTITY, "error.join_request.not_request_owner"),
 
-
-
+    ALREADY_READ(HttpStatus.UNPROCESSABLE_ENTITY, "error.notification.already_read"),
+    NOT_RECIPIENT_MEMBER(HttpStatus.UNPROCESSABLE_ENTITY, "error.notification.not_recipient_member"),
 
 
     // 5xx

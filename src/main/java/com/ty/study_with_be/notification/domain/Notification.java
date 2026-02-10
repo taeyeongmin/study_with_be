@@ -1,12 +1,17 @@
 package com.ty.study_with_be.notification.domain;
 
 import com.ty.study_with_be.global.entity.BaseTimeEntity;
+import com.ty.study_with_be.global.error.ErrorCode;
 import com.ty.study_with_be.global.event.domain.EventType;
+import com.ty.study_with_be.global.exception.DomainException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.hibernate.annotations.Comment;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
+
+import static com.ty.study_with_be.global.error.ErrorCode.ALREADY_READ;
 
 @Getter
 @Entity
@@ -63,5 +68,12 @@ public class Notification extends BaseTimeEntity {
         notification.targetMemberId = targetMemberId;
         notification.content = content;
         return notification;
+    }
+
+    public void markAsRead(Long currentMemberId){
+        if (this.readAt != null) throw new DomainException(ErrorCode.ALREADY_READ);
+        if (!Objects.equals(this.recipientMemberId, currentMemberId)) throw new DomainException(ErrorCode.NOT_RECIPIENT_MEMBER);
+
+        this.readAt = LocalDateTime.now();
     }
 }

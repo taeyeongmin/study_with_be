@@ -14,6 +14,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+/**
+ * 가입 신청과 관련된 이벤트를 수신하여 처리하는 객체
+ * - 모두 도메인 로직과 하나의 트랜잭션으로 묶어 처리한다.
+ */
 @Component
 @RequiredArgsConstructor
 public class JoinRequestOutboxListener {

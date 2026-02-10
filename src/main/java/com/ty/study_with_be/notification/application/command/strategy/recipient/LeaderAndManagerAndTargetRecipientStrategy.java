@@ -23,7 +23,11 @@ public class LeaderAndManagerAndTargetRecipientStrategy implements RecipientStra
 
         Long studyGroupId = context.getStudyGroupId();
         Long targetId = context.getRequesterMemberId() ==  null ? context.getTargetMemberId() : context.getRequesterMemberId();
+        List<Long> ids = studyGroupQueryRepository.findManagers(studyGroupId);
 
-        return studyGroupQueryRepository.findManagersAndTarget(studyGroupId,targetId);
+        // 대상 ID 추가
+        ids.add(targetId);
+
+        return ids;
     }
 }

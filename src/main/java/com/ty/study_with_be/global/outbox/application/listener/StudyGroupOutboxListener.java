@@ -2,9 +2,9 @@ package com.ty.study_with_be.global.outbox.application.listener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ty.study_with_be.global.event.domain.EventType;
+import com.ty.study_with_be.global.outbox.application.dto.OutboxPayload;
 import com.ty.study_with_be.global.outbox.domain.OutboxEvent;
 import com.ty.study_with_be.global.outbox.infra.repository.OutboxEventRepository;
-import com.ty.study_with_be.global.outbox.application.dto.OutboxPayload;
 import com.ty.study_with_be.study_group.domain.event.ChangeRoleEvent;
 import com.ty.study_with_be.study_group.domain.event.MemberKickEvent;
 import com.ty.study_with_be.study_group.domain.event.MemberLeaveEvent;
@@ -13,13 +13,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+/**
+ * 그룹,그룹원 관리와 관련된 이벤트를 수신하여 처리하는 객체
+ * - 모두 도메인 로직과 하나의 트랜잭션으로 묶어 처리한다.
+ */
 @Component
 @RequiredArgsConstructor
 public class StudyGroupOutboxListener {
 
     private final OutboxEventRepository outboxEventRepository;
     private final ObjectMapper objectMapper;
-
 
     /**
      * 스터디 그룹 멤버 role 변경
