@@ -32,6 +32,4 @@ public interface StudyGroupQueryRepository {
     Optional<Long> findLeaderId(Long studyGroupId);
 
     List<Long> findAllMember(Long studyGroupId);
-
-    List<Long> findManagersAndTarget(Long studyGroupId, Long targetId);
 }

@@ -210,7 +210,7 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
             from StudyMember sm
             join Member m
                 on sm.memberId = m.memberId
-            where sm.studyGroup.studyGroupId = :studyGroupId        
+            where sm.studyGroup.studyGroupId = :studyGroupId
         """, StudyMemberItem.class)
                 .setParameter("studyGroupId", studyGroupId)
                 .getResultList();
@@ -239,22 +239,6 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
         """, Long.class)
                 .setParameter("groupId", studyGroupId)
                 .setParameter("roles", List.of(StudyRole.LEADER, StudyRole.MANAGER,StudyRole.MEMBER))
-                .getResultList();
-    }
-
-    @Override
-    public List<Long> findManagersAndTarget(Long studyGroupId, Long targetId) {
-
-        return em.createQuery("""
-            select sm.memberId
-            from StudyMember sm
-            where sm.studyGroup.studyGroupId = :groupId
-              and sm.role in (:roles)
-              or sm.memberId = :targetId
-        """, Long.class)
-                .setParameter("groupId", studyGroupId)
-                .setParameter("targetId", targetId)
-                .setParameter("roles", List.of(StudyRole.LEADER, StudyRole.MANAGER))
                 .getResultList();
     }
 

@@ -1,11 +1,17 @@
 package com.ty.study_with_be.study_notice.domain.model;
 
 import com.ty.study_with_be.global.entity.BaseTimeEntity;
+import com.ty.study_with_be.global.event.domain.DomainEvent;
+import com.ty.study_with_be.study_group.domain.event.MemberLeaveEvent;
+import com.ty.study_with_be.study_notice.domain.event.CreateGroupNoticeEvent;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(
@@ -48,15 +54,32 @@ public class StudyNotice extends BaseTimeEntity {
     @Comment("수정자 ID")
     private Long updatedId;
 
-    public static StudyNotice create(Long studyGroupId, Long writerId, String title, String content, boolean pinned) {
+    @Transient
+    private final List<DomainEvent> domainEvents = new ArrayList<>();
+
+    /**
+     * 이벤트를 꺼내면서 비운다(중복 발행 방지).
+     */
+    public List<DomainEvent> pullDomainEvents() {
+
+        List<DomainEvent> events = new ArrayList<>(this.domainEvents);
+        this.domainEvents.clear();
+
+        return events;
+    }
+
+    public static StudyNotice create(Long studyGroupId, Long currentMemberId, String title, String content, boolean pinned) {
 
         StudyNotice studyNotice = new StudyNotice();
         studyNotice.studyGroupId = studyGroupId;
-        studyNotice.writerId = writerId;
-        studyNotice.updatedId = writerId;
+        studyNotice.writerId = currentMemberId;
+        studyNotice.updatedId = currentMemberId;
         studyNotice.title = title;
         studyNotice.content = content;
         studyNotice.pinned = pinned;
+
+        studyNotice.raise(CreateGroupNoticeEvent.of(studyGroupId, currentMemberId));
+
         return studyNotice;
     }
 
@@ -65,5 +88,9 @@ public class StudyNotice extends BaseTimeEntity {
         this.content = content;
         this.updatedId = updatedId;
         this.pinned = pinned;
+    }
+
+    private void raise(DomainEvent event) {
+        this.domainEvents.add(event);
     }
 }
