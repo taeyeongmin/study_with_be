@@ -28,4 +28,9 @@ public class MemberRepositoryImpl implements MemberRepository {
     public Member findByMemberId(Long memberId) {
         return memberJpaRepository.findByMemberId(memberId);
     }
+
+    @Override
+    public boolean existsByNickname(String nickname) {
+        return memberJpaRepository.existsByNickname(nickname);
+    }
 }

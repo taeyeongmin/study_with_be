@@ -52,29 +52,12 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         }
         String providerUserId = String.valueOf(kakaoId);
 
-        String nickname = "kakao_" + providerUserId;
-        String email = null;
-        Object accountObj = attributes.get("kakao_account");
-        if (accountObj instanceof Map<?, ?> account) {
-            Object profileObj = account.get("profile");
-            if (profileObj instanceof Map<?, ?> profile) {
-                Object nickObj = profile.get("nickname");
-                if (nickObj != null) {
-                    nickname = String.valueOf(nickObj);
-                }
-            }
-            Object emailObj = account.get("email");
-            if (emailObj != null) {
-                email = String.valueOf(emailObj);
-            }
-        }
-
+        // 기존 소셜 회원 여부 검증 후 없으면 oAuth 인증 정보만 담아서 리다이렉트
         if (!memberService.existsSocialMember(AuthType.KAKAO, providerUserId)) {
-            SignupReq signupReq = new SignupReq();
-            signupReq.setAuthType(AuthType.KAKAO);
-            signupReq.setProviderUserId(providerUserId);
-            signupReq.setNickname(nickname);
-            memberService.register(signupReq);
+
+            String url = REDIRECT_URL + "?authType=" + AuthType.KAKAO+"&providerUserId="+providerUserId;
+            response.sendRedirect(url);
+            return;
         }
 
         Member member = memberService.findSocialMember(AuthType.KAKAO, providerUserId);

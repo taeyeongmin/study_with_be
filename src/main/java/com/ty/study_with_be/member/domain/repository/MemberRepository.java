@@ -11,4 +11,6 @@ public interface MemberRepository {
     void save(Member member);
 
     Member findByMemberId(Long memberId);
+
+    boolean existsByNickname(String nickname);
 }

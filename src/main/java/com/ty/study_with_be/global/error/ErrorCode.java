@@ -18,6 +18,7 @@ public enum ErrorCode {
 
     // 422
     DUPLICATE_LOGIN_ID(HttpStatus.CONFLICT, "error.auth.duplicate_login_id"),
+    DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "error.auth.duplicate_nickname"),
     INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "error.auth.invalid_credentials"),
 
     TOO_MANY_CREATE_GROUP(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.too_many_create_group"),

@@ -1,5 +1,6 @@
 package com.ty.study_with_be.member.domain.model;
 
+import com.ty.study_with_be.auth.presentation.AuthController;
 import com.ty.study_with_be.auth.presentation.req.SignupReq;
 import com.ty.study_with_be.global.entity.BaseTimeEntity;
 import io.micrometer.common.util.StringUtils;
@@ -22,6 +23,10 @@ import java.time.LocalDateTime;
         @UniqueConstraint(
             name = "uk_local_user",
             columnNames = {"login_id"}
+        ),
+        @UniqueConstraint(
+                name = "uk_nickname",
+                columnNames = {"nickname"}
         )
     },
     indexes = {
@@ -94,11 +99,11 @@ public class Member extends BaseTimeEntity {
     /**
      * 소셜 회원가입
      */
-    public static Member createSocialMember(SignupReq signupReq) {
+    public static Member createSocialMember(AuthType authType, String providerUserId, String nickname) {
         Member member = new Member();
-        member.authType = signupReq.getAuthType();
-        member.providerUserId = signupReq.getProviderUserId();
-        member.nickname = signupReq.getNickname();
+        member.authType = authType;
+        member.providerUserId = providerUserId;
+        member.nickname = nickname;
         return member;
     }
 
