@@ -35,6 +35,8 @@ public class NotificationQueryRepositoryImpl implements NotificationQueryReposit
     return em.createQuery("""
         select new com.ty.study_with_be.notification.presentation.query.dto.NotificationItem(
             noti.id,
+            sg.studyGroupId,
+            sg.title,
             noti.recipientMemberId,
             noti.type,
             null,
@@ -43,6 +45,8 @@ public class NotificationQueryRepositoryImpl implements NotificationQueryReposit
             noti.createdAt
         )
         from Notification noti
+        left join StudyGroup sg
+            on noti.studyGroupId = sg.studyGroupId
         where noti.recipientMemberId = :memberId
             and noti.readAt is null
         order by noti.createdAt desc

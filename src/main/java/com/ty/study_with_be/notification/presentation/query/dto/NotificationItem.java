@@ -16,6 +16,12 @@ public class NotificationItem {
     @Schema(description = "알림 PK", example = "1")
     private Long id;
 
+    @Schema(description = "그룹 PK", example = "1")
+    private Long studyGroupId;
+
+    @Schema(description = "그룹명", example = "1")
+    private String studyGroupNm;
+
     @Schema(description = "수신자 회원 ID", example = "1")
     private Long recipientMemberId;
 
