@@ -2,6 +2,8 @@ package com.ty.study_with_be.global.security.handler;
 
 import com.ty.study_with_be.auth.presentation.req.SignupReq;
 import com.ty.study_with_be.global.security.token.JwtTokenProvider;
+import com.ty.study_with_be.global.security.token.OAuth2ExchangeTokenStore;
+import com.ty.study_with_be.global.security.token.OAuth2TicketPayload;
 import com.ty.study_with_be.member.domain.model.AuthType;
 import com.ty.study_with_be.member.domain.model.Member;
 import com.ty.study_with_be.member.service.MemberService;
@@ -16,8 +18,12 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -25,6 +31,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberService memberService;
+    private final OAuth2ExchangeTokenStore oAuth2ExchangeTokenStore;
 
     @Value("${kakao.redirect-url}")
     private String REDIRECT_URL;
@@ -78,8 +85,22 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                 authorities
         );
 
-        boolean secure = false;
-        CookieUtils.addHttpOnlyCookie(response, "ACCESS_TOKEN", accessToken, 60 * 15, secure);
-        response.sendRedirect(REDIRECT_URL);
+        String ticket = saveOAuthTicket(member.getMemberId(), accessToken, member.getNickname());
+
+        String url = REDIRECT_URL + "?ticket=" + URLEncoder.encode(ticket, StandardCharsets.UTF_8);
+        response.sendRedirect(url);
+    }
+
+    private String saveOAuthTicket(Long memberId, String accessToken,String nickname) {
+
+        String ticket = UUID.randomUUID().toString();
+
+        oAuth2ExchangeTokenStore.save(
+                ticket,
+                new OAuth2TicketPayload(accessToken, memberId, nickname),
+                Duration.ofSeconds(30)
+        );
+
+        return ticket;
     }
 }
