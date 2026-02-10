@@ -58,7 +58,7 @@ public class JoinRequestQueryRepositoryImpl implements JoinRequestQueryRepositor
 
         return em.createQuery("""
             select new com.ty.study_with_be.join_request.presentation.query.dto.JoinRequestListItem(
-                jr.id,
+                jr.joinRequestId,
                 m.memberId,
                 m.loginId,
                 m.nickname,

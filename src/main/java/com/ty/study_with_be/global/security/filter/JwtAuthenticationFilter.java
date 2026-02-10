@@ -1,6 +1,5 @@
 package com.ty.study_with_be.global.security.filter;
 
-import com.ty.study_with_be.global.security.handler.CookieUtils;
 import com.ty.study_with_be.global.security.token.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -30,22 +29,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        String token = CookieUtils.getCookieValue(request, ACCESS_TOKEN_COOKIE);
 
-//        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
-//
-//        String token = request.getHeader("Authorization");
+        String authHeader = request.getHeader("Authorization");
 
-        System.out.println(">>> METHOD = " + request.getMethod());
-        System.out.println(">>> URI = " + request.getRequestURI());
-        System.out.println(">>> Authorization = " + request.getHeader("Authorization"));
-
-        if (token != null && jwtTokenProvider.validateToken(token)){
-//        if (token != null && token.startsWith("Bearer ") && jwtTokenProvider.validateToken(token)) {
-            Authentication authentication = jwtTokenProvider.getAuthentication(token);
+        if (authHeader != null && authHeader.startsWith("Bearer ") && jwtTokenProvider.validateToken(authHeader.substring(7))) {
+            Authentication authentication = jwtTokenProvider.getAuthentication(authHeader.substring(7));
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 

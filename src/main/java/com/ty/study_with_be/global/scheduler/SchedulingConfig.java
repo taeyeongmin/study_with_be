@@ -1,4 +1,4 @@
-package com.ty.study_with_be.global.outbox;
+package com.ty.study_with_be.global.scheduler;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;

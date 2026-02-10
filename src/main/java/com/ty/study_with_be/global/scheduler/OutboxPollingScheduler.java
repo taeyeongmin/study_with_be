@@ -1,4 +1,4 @@
-package com.ty.study_with_be.global.outbox.infra.scheduler;
+package com.ty.study_with_be.global.scheduler;
 
 import com.ty.study_with_be.global.outbox.application.OutboxProcessor;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class OutboxPollingScheduler {
         try {
             outboxProcessor.drainOnce();
         } catch (Exception e) {
-            log.error("[OUTBOX] polling drain failed", e);
+            log.error("[OUTBOX] polling 실패", e);
         } finally {
             MDC.remove("suppressHibernateSql");
         }
