@@ -1,13 +1,11 @@
 package com.ty.study_with_be.study_group.presentation.query.dto;
 
-import com.ty.study_with_be.study_group.domain.model.enums.OperationStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
+import lombok.Data;
 import lombok.Getter;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
-@Getter
+@Data
 @Schema(description = "내 참여 스터디 그룹 목록 조회 요청")
 public class MyStudyGroupListReq {
 
