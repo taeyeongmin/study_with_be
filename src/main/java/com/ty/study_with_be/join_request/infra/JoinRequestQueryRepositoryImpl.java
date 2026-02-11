@@ -3,6 +3,8 @@ package com.ty.study_with_be.join_request.infra;
 import com.ty.study_with_be.join_request.application.query.JoinRequestQueryRepository;
 import com.ty.study_with_be.join_request.domain.model.enums.JoinRequestStatus;
 import com.ty.study_with_be.join_request.presentation.query.dto.JoinRequestListItem;
+import com.ty.study_with_be.study_group.domain.model.enums.OperationStatus;
+import com.ty.study_with_be.study_group.domain.model.enums.StudyRole;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -85,4 +87,22 @@ public class JoinRequestQueryRepositoryImpl implements JoinRequestQueryRepositor
                 .setParameter("status", status)
                 .getResultList();
     }
+
+    @Override
+    public int countByMemberIdPending(Long memberId) {
+
+        Long count = em.createQuery("""
+            select count(jr)
+            from JoinRequest jr
+            where jr.requesterId = :memberId
+                and jr.status = :status
+        """, Long.class)
+                .setParameter("memberId", memberId)
+                .setParameter("status", JoinRequestStatus.PENDING)
+                .getSingleResult();
+
+        return count.intValue();
+    }
+
+
 }

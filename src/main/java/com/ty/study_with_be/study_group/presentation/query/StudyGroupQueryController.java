@@ -91,7 +91,7 @@ public class StudyGroupQueryController {
         return detail;
     }
 
-    @PermitAll
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{studyGroupId}/my_status")
     @Operation(
             summary = "내 스터디 그룹 상태 조회",
@@ -129,5 +129,7 @@ public class StudyGroupQueryController {
 
         return queryService.getStudyMemberList(studyGroupId);
     }
+
+
 
 }

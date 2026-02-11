@@ -1,6 +1,7 @@
 package com.ty.study_with_be.study_group.infra.query;
 
 import com.ty.study_with_be.study_group.applicaiton.query.StudyGroupQueryRepository;
+import com.ty.study_with_be.study_group.domain.model.enums.OperationStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyRole;
@@ -272,5 +273,45 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
                 .getSingleResult();
 
         return count > 0;
+    }
+
+    /** 내가 참여중인 그룹 갯수 조회 (방장X) */
+    public int countByMemberIdJoined(Long memberId) {
+
+        Long count = em.createQuery("""
+            select count(sm)
+            from StudyMember sm
+            join StudyGroup sg
+                on sm.studyMemberId = sg.studyGroupId
+                and sm.role != :role
+            where sm.studyMemberId = :memberId
+                and sg.operationStatus != :operationStatus
+        """, Long.class)
+                .setParameter("memberId", memberId)
+                .setParameter("operationStatus", OperationStatus.CLOSED)
+                .setParameter("role", StudyRole.LEADER)
+                .getSingleResult();
+
+        return count.intValue();
+    }
+
+    /** 내가 참여중인 그룹 갯수 조회 (방장X) */
+    public int countByMemberIdOperate(Long memberId) {
+
+        Long count = em.createQuery("""
+            select count(sm)
+            from StudyMember sm
+            join StudyGroup sg
+                on sm.studyMemberId = sg.studyGroupId
+                and sm.role = :role
+            where sm.studyMemberId = :memberId
+                and sg.operationStatus != :operationStatus
+        """, Long.class)
+                .setParameter("memberId", memberId)
+                .setParameter("operationStatus", OperationStatus.CLOSED)
+                .setParameter("role", StudyRole.LEADER)
+                .getSingleResult();
+
+        return count.intValue();
     }
 }

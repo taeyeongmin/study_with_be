@@ -20,6 +20,7 @@ public class JoinRequestQueryService {
     private final JoinRequestQueryRepository joinRequestQueryRepository;
     private final StudyGroupQueryRepository studyGroupQueryRepository;
 
+    /** 현재 그룹에 대한 모든 신청 목록 조회 */
     public JoinRequestListRes getJoinRequests(Long studyGroupId, Long viewerMemberId, JoinRequestStatus status) {
 
         // 권한 체크
@@ -33,4 +34,10 @@ public class JoinRequestQueryService {
 
         return JoinRequestListRes.of(studyGroupId, joinRequests);
     }
+
+    /** 현재 그룹에 대한 모든 신청 대기 목록 조회 */
+    public int countByMemberIdPending(Long memberId) {
+        return joinRequestQueryRepository.countByMemberIdPending(memberId);
+    }
+
 }

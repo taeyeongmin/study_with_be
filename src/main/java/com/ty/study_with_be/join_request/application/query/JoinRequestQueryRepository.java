@@ -13,4 +13,6 @@ public interface JoinRequestQueryRepository {
     Optional<Long> findPendingJoinRequestId(Long studyGroupId, Long memberId);
 
     List<JoinRequestListItem> findJoinRequests(Long studyGroupId, JoinRequestStatus status);
+
+    int countByMemberIdPending(Long memberId);
 }

@@ -32,4 +32,8 @@ public interface StudyGroupQueryRepository {
     Optional<Long> findLeaderId(Long studyGroupId);
 
     List<Long> findAllMember(Long studyGroupId);
+
+    int countByMemberIdJoined(Long memberId);
+
+    int countByMemberIdOperate(Long memberId);
 }

@@ -1,6 +1,6 @@
 package com.ty.study_with_be.notification.application.command.message;
 
-import com.ty.study_with_be.member.application.query.MemberQueryRepository;
+import com.ty.study_with_be.member.application.query.repository.MemberQueryRepository;
 import com.ty.study_with_be.notification.application.command.strategy.NotificationContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

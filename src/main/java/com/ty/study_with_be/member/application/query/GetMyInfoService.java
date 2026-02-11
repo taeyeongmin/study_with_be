@@ -1,17 +1,15 @@
-package com.ty.study_with_be.member.service;
+package com.ty.study_with_be.member.application.query;
 
 import com.ty.study_with_be.member.domain.model.AuthType;
 import com.ty.study_with_be.member.domain.model.Member;
 import com.ty.study_with_be.member.domain.repository.MemberRepository;
 import com.ty.study_with_be.member.presentation.query.dto.MemberInfoRes;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
-@Transactional(readOnly = true)
-public class MemberService {
+@AllArgsConstructor
+public class GetMyInfoService implements GetMyInfoUseCase {
 
     private final MemberRepository memberRepository;
 
