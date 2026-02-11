@@ -2,42 +2,31 @@ package com.ty.study_with_be.member.service;
 
 import com.ty.study_with_be.member.domain.model.AuthType;
 import com.ty.study_with_be.member.domain.model.Member;
-import com.ty.study_with_be.member.infra.MemberJpaRepository;
-import com.ty.study_with_be.member.presentation.res.MemberInfoRes;
+import com.ty.study_with_be.member.domain.repository.MemberRepository;
+import com.ty.study_with_be.member.presentation.query.dto.MemberInfoRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MemberService {
 
-    private final MemberJpaRepository memberRepository;
-//    private final Map<String, SignupService> signupServiceMap;
-
-//    @Transactional
-//    public void register(SignupReq signupReq) {
-//
-//        SignupService signupService = signupServiceMap.get(signupReq.getAuthType().name());
-//
-//        // 1. 아이디 중복 체크(Local은 loginId, social은 provider+providerUserId로)
-//        signupService.validate(signupReq);
-//
-//        // 2. memberEntity 생성(Local은 Member.createLocalMember(), social은 createSocialMember() )
-//        Member memberEntity = signupService.createMemberEntity(signupReq);
-//
-//        // 3. 저장
-//        memberRepository.save(memberEntity);
-//    }
+    private final MemberRepository memberRepository;
 
     public MemberInfoRes getMemberInfo(Long memberId) {
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalStateException("회원 없음"));
 
+        String authType = AuthType.KAKAO.equals(member.getAuthType()) ? "KAKAO" : "자사";
+
         return new MemberInfoRes(
                 member.getMemberId(),
                 member.getNickname(),
-                member.getEmail()
+                member.getEmail(),
+                authType
         );
     }
 

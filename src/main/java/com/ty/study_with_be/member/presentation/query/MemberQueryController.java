@@ -1,6 +1,6 @@
-package com.ty.study_with_be.member.presentation;
+package com.ty.study_with_be.member.presentation.query;
 
-import com.ty.study_with_be.member.presentation.res.MemberInfoRes;
+import com.ty.study_with_be.member.presentation.query.dto.MemberInfoRes;
 import com.ty.study_with_be.member.service.MemberService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/member")
 @Tag(name = "회원", description = "회원 API")
-public class MemberController {
+public class MemberQueryController {
 
     private final MemberService memberService;
 

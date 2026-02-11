@@ -1,11 +1,11 @@
 package com.ty.study_with_be.member.infra;
 
+import com.ty.study_with_be.member.domain.model.AuthType;
 import com.ty.study_with_be.member.domain.model.Member;
 import com.ty.study_with_be.member.domain.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -25,12 +25,22 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     @Override
-    public Member findByMemberId(Long memberId) {
-        return memberJpaRepository.findByMemberId(memberId);
+    public Optional<Member> findById(Long memberId) {
+        return memberJpaRepository.findById(memberId);
     }
 
     @Override
     public boolean existsByNickname(String nickname) {
         return memberJpaRepository.existsByNickname(nickname);
+    }
+
+    @Override
+    public boolean existsByAuthTypeAndProviderUserId(AuthType authType, String providerUserId) {
+        return memberJpaRepository.existsByAuthTypeAndProviderUserId(authType, providerUserId);
+    }
+
+    @Override
+    public Optional<Member> findByAuthTypeAndProviderUserId(AuthType authType, String providerUserId) {
+        return memberJpaRepository.findByAuthTypeAndProviderUserId(authType, providerUserId);
     }
 }

@@ -129,4 +129,9 @@ public class Member extends BaseTimeEntity {
     void preUpdate() {
         validateLoginMethod();
     }
+
+    public void changeProfile(String nickname, String email) {
+        this.nickname = nickname;
+        this.email = email;
+    }
 }
