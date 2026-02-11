@@ -3,10 +3,7 @@ package com.ty.study_with_be.study_group.presentation.query;
 import com.ty.study_with_be.study_group.applicaiton.query.StudyGroupQueryService;
 import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
-import com.ty.study_with_be.study_group.presentation.query.dto.MyStudyGroupStatusRes;
-import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupDetailRes;
-import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupListRes;
-import com.ty.study_with_be.study_group.presentation.query.dto.StudyMemberListRes;
+import com.ty.study_with_be.study_group.presentation.query.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -130,6 +127,24 @@ public class StudyGroupQueryController {
         return queryService.getStudyMemberList(studyGroupId);
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/my")
+    @Operation(
+            summary = "내가 참여중인 그룹 목록 조회",
+            description = """
+                    ## 기능 설명
+                    - 해당 그룹의 회원 목록을 조회.
+                    """
+    )
+    @Parameter(name = "studyGroupId", description = "스터디 그룹 ID", in = ParameterIn.PATH)
+    public MyStudyGroupListRes getMyGroupList(
+            @AuthenticationPrincipal User principal
+            , @ModelAttribute MyStudyGroupListReq request
+    ){
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
+
+        return queryService.getMyGroupList(Long.valueOf(principal.getUsername()), request, pageable);
+    }
 
 
 }

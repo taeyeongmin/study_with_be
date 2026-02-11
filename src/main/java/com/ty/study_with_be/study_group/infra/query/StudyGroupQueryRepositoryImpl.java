@@ -5,6 +5,7 @@ import com.ty.study_with_be.study_group.domain.model.enums.OperationStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyRole;
+import com.ty.study_with_be.study_group.presentation.query.dto.MyStudyGroupOperationFilter;
 import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupDetailRes;
 import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupListItem;
 import com.ty.study_with_be.study_group.presentation.query.dto.StudyMemberItem;
@@ -314,4 +315,75 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
 
         return count.intValue();
     }
+
+    @Override
+    public Page<StudyGroupListItem> findMyStudyGroups(
+            Long memberId,
+            MyStudyGroupOperationFilter operationFilter,
+            Pageable pageable
+    ) {
+
+        StringBuilder where = new StringBuilder(" where sm.memberId = :memberId ");
+        Map<String, Object> params = new HashMap<>();
+        params.put("memberId", memberId);
+
+        if (operationFilter != null && operationFilter != MyStudyGroupOperationFilter.ALL) {
+            where.append(" and sg.operationStatus = :operationStatus ");
+            params.put("operationStatus", OperationStatus.valueOf(operationFilter.name()));
+        }
+
+        String contentQuery = """
+        select new com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupListItem(
+           sg.studyGroupId,
+                sg.title,
+                sg.category,
+                cat.codeNm,
+                sg.topic,
+                sg.recruitStatus,
+                case sg.recruitStatus
+                    when com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus.RECRUITING
+                        then '모집중'
+                    else '모집마감'
+                end,
+                sg.description,
+                sg.capacity,
+                sg.currentCount,
+                case
+                    when sg.applyDeadlineAt is null then null
+                    else cast(function('datediff', sg.applyDeadlineAt, current_date) as integer)
+                end
+        )
+        from StudyMember sm
+        join sm.studyGroup sg
+        left join CommonCode cat
+            on cat.code = sg.category
+           and cat.useYn = true
+           and cat.depth = 2
+    """ + where + """
+        order by sm.createdAt desc
+    """;
+
+        TypedQuery<StudyGroupListItem> query =
+                em.createQuery(contentQuery, StudyGroupListItem.class);
+
+        params.forEach(query::setParameter);
+        query.setFirstResult((int) pageable.getOffset());
+        query.setMaxResults(pageable.getPageSize());
+
+        List<StudyGroupListItem> content = query.getResultList();
+
+        String countQuery = """
+        select count(sg.studyGroupId)
+        from StudyMember sm
+        join sm.studyGroup sg
+    """ + where;
+
+        TypedQuery<Long> countTypedQuery = em.createQuery(countQuery, Long.class);
+        params.forEach(countTypedQuery::setParameter);
+
+        long total = countTypedQuery.getSingleResult();
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
 }

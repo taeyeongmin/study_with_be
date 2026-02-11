@@ -62,7 +62,6 @@ public class StudyGroupQueryService {
         );
     }
 
-
     /**
      * 스터디 그룹 내 회원 목록 조회
      *
@@ -98,7 +97,6 @@ public class StudyGroupQueryService {
                 joinRequestQueryRepository.findPendingJoinRequestId(groupId, memberId);
 
         return joinRequestId.map(MyStudyGroupStatusRes::pending).orElseGet(MyStudyGroupStatusRes::none);
-
     }
 
     /**
@@ -119,5 +117,23 @@ public class StudyGroupQueryService {
     public int countByMemberIdOperate(Long memberId) {
 
         return groupQueryRepository.countByMemberIdOperate(memberId);
+    }
+
+    public MyStudyGroupListRes getMyGroupList(
+            Long memberId, MyStudyGroupListReq request, Pageable pageable
+    ) {
+
+        Page<StudyGroupListItem> page =
+                groupQueryRepository.findMyStudyGroups(memberId, request.getOperationFilter(), pageable);
+
+        return new MyStudyGroupListRes(
+                page.getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.hasNext()
+        );
+
     }
 }
