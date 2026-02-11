@@ -5,17 +5,20 @@ import jakarta.validation.constraints.Min;
 import lombok.Data;
 import lombok.Getter;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Data
 @Schema(description = "내 참여 스터디 그룹 목록 조회 요청")
 public class MyStudyGroupListReq {
 
     @Schema(
-            description = "운영 상태 필터 (PREPARING / ONGOING / CLOSED / ALL)",
-            example = "ONGOING",
-            defaultValue = "ONGOING"
+            description = "운영 상태 필터 (PREPARING / ONGOING / CLOSED)",
+            type = "array",
+            example = "[\"ONGOING\"]",
+            defaultValue = "[\"PREPARING\", \"ONGOING\"]"
     )
-    private MyStudyGroupOperationFilter operationFilter = MyStudyGroupOperationFilter.ONGOING;
-
+    private List<MyStudyGroupOperationFilter> operationFilter = List.of(MyStudyGroupOperationFilter.PREPARING, MyStudyGroupOperationFilter.ONGOING);
     @Schema(
             description = "페이지 번호 (0부터 시작)",
             example = "0",

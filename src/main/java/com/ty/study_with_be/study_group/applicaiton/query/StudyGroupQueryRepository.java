@@ -35,5 +35,5 @@ public interface StudyGroupQueryRepository {
 
     int countByMemberIdOperate(Long memberId);
 
-    Page<StudyGroupListItem> findMyStudyGroups(Long memberId, MyStudyGroupOperationFilter operationStatus, Pageable pageable);
+    Page<MyStudyGroupListItem> findMyStudyGroups(Long memberId, List<MyStudyGroupOperationFilter> operationStatus, Pageable pageable);
 }

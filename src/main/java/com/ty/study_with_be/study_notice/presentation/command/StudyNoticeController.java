@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/study_group/{studyGroupId}/notice")
-@Tag(name = "스터디 공지", description = "스터디 공지 관리 API")
+@Tag(name = "스터디 공지")
 public class StudyNoticeController {
 
     private final StudyNoticeCreateUseCase studyNoticeCreateUseCase;

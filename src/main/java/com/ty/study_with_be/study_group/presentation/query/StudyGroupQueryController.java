@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.security.PermitAll;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -133,18 +134,17 @@ public class StudyGroupQueryController {
             summary = "내가 참여중인 그룹 목록 조회",
             description = """
                     ## 기능 설명
-                    - 해당 그룹의 회원 목록을 조회.
+                    - 내가 참여중인 그룹의 목록을 조회
                     """
     )
     @Parameter(name = "studyGroupId", description = "스터디 그룹 ID", in = ParameterIn.PATH)
     public MyStudyGroupListRes getMyGroupList(
             @AuthenticationPrincipal User principal
-            , @ModelAttribute MyStudyGroupListReq request
+            , @ParameterObject @ModelAttribute MyStudyGroupListReq request
     ){
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
 
         return queryService.getMyGroupList(Long.valueOf(principal.getUsername()), request, pageable);
     }
-
 
 }

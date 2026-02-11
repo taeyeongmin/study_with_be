@@ -123,7 +123,7 @@ public class StudyGroupQueryService {
             Long memberId, MyStudyGroupListReq request, Pageable pageable
     ) {
 
-        Page<StudyGroupListItem> page =
+        Page<MyStudyGroupListItem> page =
                 groupQueryRepository.findMyStudyGroups(memberId, request.getOperationFilter(), pageable);
 
         return new MyStudyGroupListRes(

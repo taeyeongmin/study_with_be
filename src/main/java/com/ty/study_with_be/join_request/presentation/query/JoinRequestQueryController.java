@@ -66,7 +66,7 @@ public class JoinRequestQueryController {
                     - statusFilter + page/size로 미리보기/전체목록 모두 처리
                     """
     )
-    public MyRequestListRes getMyGroupList(
+    public MyRequestListRes getMyRequestList(
             @AuthenticationPrincipal User principal,
             @ModelAttribute MyRequestListReq request
     ) {

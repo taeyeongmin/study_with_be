@@ -4,6 +4,7 @@ import com.ty.study_with_be.notification.application.command.usecase.Notificatio
 import com.ty.study_with_be.notification.application.command.usecase.NotificationReadUseCase;
 import com.ty.study_with_be.notification.infra.sse.SseEmitterRegistry;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -17,6 +18,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "스터디 그룹 알림")
 @RequestMapping("/api/study_group/notification")
 public class NotificationController {
 

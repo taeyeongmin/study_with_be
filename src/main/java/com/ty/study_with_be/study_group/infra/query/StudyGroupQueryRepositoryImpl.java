@@ -5,10 +5,7 @@ import com.ty.study_with_be.study_group.domain.model.enums.OperationStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyRole;
-import com.ty.study_with_be.study_group.presentation.query.dto.MyStudyGroupOperationFilter;
-import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupDetailRes;
-import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupListItem;
-import com.ty.study_with_be.study_group.presentation.query.dto.StudyMemberItem;
+import com.ty.study_with_be.study_group.presentation.query.dto.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
@@ -283,9 +280,9 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
             select count(sm)
             from StudyMember sm
             join StudyGroup sg
-                on sm.studyMemberId = sg.studyGroupId
+                on sm.studyGroup.studyGroupId = sg.studyGroupId
                 and sm.role != :role
-            where sm.studyMemberId = :memberId
+            where sm.memberId = :memberId
                 and sg.operationStatus != :operationStatus
         """, Long.class)
                 .setParameter("memberId", memberId)
@@ -296,16 +293,16 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
         return count.intValue();
     }
 
-    /** 내가 참여중인 그룹 갯수 조회 (방장X) */
+    /** 내가 운영중인 그룹 갯수 조회 (방장O) */
     public int countByMemberIdOperate(Long memberId) {
 
         Long count = em.createQuery("""
-            select count(sm)
+            select count(sg)
             from StudyMember sm
             join StudyGroup sg
-                on sm.studyMemberId = sg.studyGroupId
+                on sm.studyGroup.studyGroupId = sg.studyGroupId
                 and sm.role = :role
-            where sm.studyMemberId = :memberId
+            where sm.memberId = :memberId
                 and sg.operationStatus != :operationStatus
         """, Long.class)
                 .setParameter("memberId", memberId)
@@ -317,9 +314,9 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
     }
 
     @Override
-    public Page<StudyGroupListItem> findMyStudyGroups(
+    public Page<MyStudyGroupListItem> findMyStudyGroups(
             Long memberId,
-            MyStudyGroupOperationFilter operationFilter,
+            List<MyStudyGroupOperationFilter> operationFilter,
             Pageable pageable
     ) {
 
@@ -327,15 +324,20 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
         Map<String, Object> params = new HashMap<>();
         params.put("memberId", memberId);
 
-        if (operationFilter != null && operationFilter != MyStudyGroupOperationFilter.ALL) {
-            where.append(" and sg.operationStatus = :operationStatus ");
-            params.put("operationStatus", OperationStatus.valueOf(operationFilter.name()));
+        if (operationFilter != null && !operationFilter.isEmpty()) {
+            List<OperationStatus> operationStatuses = operationFilter.stream()
+                    .map(filter -> OperationStatus.valueOf(filter.name()))
+                    .toList();
+
+            where.append(" and sg.operationStatus in(:operationStatus) ");
+            params.put("operationStatus", operationStatuses);
         }
 
         String contentQuery = """
-        select new com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupListItem(
+        select new com.ty.study_with_be.study_group.presentation.query.dto.MyStudyGroupListItem(
            sg.studyGroupId,
                 sg.title,
+                sm.role,
                 sg.category,
                 cat.codeNm,
                 sg.topic,
@@ -345,13 +347,8 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
                         then '모집중'
                     else '모집마감'
                 end,
-                sg.description,
                 sg.capacity,
-                sg.currentCount,
-                case
-                    when sg.applyDeadlineAt is null then null
-                    else cast(function('datediff', sg.applyDeadlineAt, current_date) as integer)
-                end
+                sg.currentCount
         )
         from StudyMember sm
         join sm.studyGroup sg
@@ -363,14 +360,14 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
         order by sm.createdAt desc
     """;
 
-        TypedQuery<StudyGroupListItem> query =
-                em.createQuery(contentQuery, StudyGroupListItem.class);
+        TypedQuery<MyStudyGroupListItem> query =
+                em.createQuery(contentQuery, MyStudyGroupListItem.class);
 
         params.forEach(query::setParameter);
         query.setFirstResult((int) pageable.getOffset());
         query.setMaxResults(pageable.getPageSize());
 
-        List<StudyGroupListItem> content = query.getResultList();
+        List<MyStudyGroupListItem> content = query.getResultList();
 
         String countQuery = """
         select count(sg.studyGroupId)

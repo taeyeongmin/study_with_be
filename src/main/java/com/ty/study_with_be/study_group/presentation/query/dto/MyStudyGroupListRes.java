@@ -12,7 +12,7 @@ import java.util.List;
 public class MyStudyGroupListRes {
 
     @Schema(description = "목록 아이템")
-    private List<StudyGroupListItem> items;
+    private List<MyStudyGroupListItem> items;
 
     @Schema(description = "현재 페이지(0부터)", example = "0")
     private int page;
