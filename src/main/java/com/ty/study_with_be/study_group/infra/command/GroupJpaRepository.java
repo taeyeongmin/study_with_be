@@ -21,4 +21,5 @@ public interface GroupJpaRepository extends JpaRepository<StudyGroup,Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select sg from StudyGroup sg where sg.studyGroupId = :studyGroupId")
     Optional<StudyGroup> findByStudyGroupIdForUpdate(Long studyGroupId);
+
 }

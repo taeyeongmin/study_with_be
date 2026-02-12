@@ -1,12 +1,10 @@
 package com.ty.study_with_be.study_group.applicaiton.query;
 
+import com.ty.study_with_be.study_group.domain.model.enums.OperationStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyRole;
-import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupDetailRes;
-import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupListItem;
-import com.ty.study_with_be.study_group.presentation.query.dto.StudyMemberItem;
-import com.ty.study_with_be.study_group.presentation.query.dto.StudyMemberListRes;
+import com.ty.study_with_be.study_group.presentation.query.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -32,4 +30,10 @@ public interface StudyGroupQueryRepository {
     Optional<Long> findLeaderId(Long studyGroupId);
 
     List<Long> findAllMember(Long studyGroupId);
+
+    int countByMemberIdJoined(Long memberId);
+
+    int countByMemberIdOperate(Long memberId);
+
+    Page<MyStudyGroupListItem> findMyStudyGroups(Long memberId, List<MyStudyGroupOperationFilter> operationStatus, Pageable pageable);
 }

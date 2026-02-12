@@ -1,12 +1,11 @@
 package com.ty.study_with_be.study_group.infra.query;
 
 import com.ty.study_with_be.study_group.applicaiton.query.StudyGroupQueryRepository;
+import com.ty.study_with_be.study_group.domain.model.enums.OperationStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyRole;
-import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupDetailRes;
-import com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupListItem;
-import com.ty.study_with_be.study_group.presentation.query.dto.StudyMemberItem;
+import com.ty.study_with_be.study_group.presentation.query.dto.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
@@ -273,4 +272,115 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
 
         return count > 0;
     }
+
+    /** 내가 참여중인 그룹 갯수 조회 (방장X) */
+    public int countByMemberIdJoined(Long memberId) {
+
+        Long count = em.createQuery("""
+            select count(sm)
+            from StudyMember sm
+            join StudyGroup sg
+                on sm.studyGroup.studyGroupId = sg.studyGroupId
+                and sm.role != :role
+            where sm.memberId = :memberId
+                and sg.operationStatus != :operationStatus
+        """, Long.class)
+                .setParameter("memberId", memberId)
+                .setParameter("operationStatus", OperationStatus.CLOSED)
+                .setParameter("role", StudyRole.LEADER)
+                .getSingleResult();
+
+        return count.intValue();
+    }
+
+    /** 내가 운영중인 그룹 갯수 조회 (방장O) */
+    public int countByMemberIdOperate(Long memberId) {
+
+        Long count = em.createQuery("""
+            select count(sg)
+            from StudyMember sm
+            join StudyGroup sg
+                on sm.studyGroup.studyGroupId = sg.studyGroupId
+                and sm.role = :role
+            where sm.memberId = :memberId
+                and sg.operationStatus != :operationStatus
+        """, Long.class)
+                .setParameter("memberId", memberId)
+                .setParameter("operationStatus", OperationStatus.CLOSED)
+                .setParameter("role", StudyRole.LEADER)
+                .getSingleResult();
+
+        return count.intValue();
+    }
+
+    @Override
+    public Page<MyStudyGroupListItem> findMyStudyGroups(
+            Long memberId,
+            List<MyStudyGroupOperationFilter> operationFilter,
+            Pageable pageable
+    ) {
+
+        StringBuilder where = new StringBuilder(" where sm.memberId = :memberId ");
+        Map<String, Object> params = new HashMap<>();
+        params.put("memberId", memberId);
+
+        if (operationFilter != null && !operationFilter.isEmpty()) {
+            List<OperationStatus> operationStatuses = operationFilter.stream()
+                    .map(filter -> OperationStatus.valueOf(filter.name()))
+                    .toList();
+
+            where.append(" and sg.operationStatus in(:operationStatus) ");
+            params.put("operationStatus", operationStatuses);
+        }
+
+        String contentQuery = """
+        select new com.ty.study_with_be.study_group.presentation.query.dto.MyStudyGroupListItem(
+           sg.studyGroupId,
+                sg.title,
+                sm.role,
+                sg.category,
+                cat.codeNm,
+                sg.topic,
+                sg.recruitStatus,
+                case sg.recruitStatus
+                    when com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus.RECRUITING
+                        then '모집중'
+                    else '모집마감'
+                end,
+                sg.capacity,
+                sg.currentCount
+        )
+        from StudyMember sm
+        join sm.studyGroup sg
+        left join CommonCode cat
+            on cat.code = sg.category
+           and cat.useYn = true
+           and cat.depth = 2
+    """ + where + """
+        order by sm.createdAt desc
+    """;
+
+        TypedQuery<MyStudyGroupListItem> query =
+                em.createQuery(contentQuery, MyStudyGroupListItem.class);
+
+        params.forEach(query::setParameter);
+        query.setFirstResult((int) pageable.getOffset());
+        query.setMaxResults(pageable.getPageSize());
+
+        List<MyStudyGroupListItem> content = query.getResultList();
+
+        String countQuery = """
+        select count(sg.studyGroupId)
+        from StudyMember sm
+        join sm.studyGroup sg
+    """ + where;
+
+        TypedQuery<Long> countTypedQuery = em.createQuery(countQuery, Long.class);
+        params.forEach(countTypedQuery::setParameter);
+
+        long total = countTypedQuery.getSingleResult();
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
 }

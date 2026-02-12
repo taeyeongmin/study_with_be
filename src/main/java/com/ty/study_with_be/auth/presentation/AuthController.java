@@ -1,6 +1,8 @@
 package com.ty.study_with_be.auth.presentation;
 
+import com.ty.study_with_be.auth.application.OAuthSignupUseCase;
 import com.ty.study_with_be.auth.application.SignupUseCase;
+import com.ty.study_with_be.auth.presentation.req.OAuthSignupReq;
 import com.ty.study_with_be.auth.presentation.req.SignupReq;
 import com.ty.study_with_be.auth.presentation.res.OAuth2TicketRes;
 import com.ty.study_with_be.global.security.handler.CookieUtils;
@@ -22,11 +24,18 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final SignupUseCase signupUseCase;
+    private final OAuthSignupUseCase oAuthSignupUseCase;
     private final OAuth2ExchangeTokenStore ticketStore;
 
     @PostMapping("/signup_local")
     public ResponseEntity<Object> registerMember(@Valid @RequestBody SignupReq signupReq) {
         signupUseCase.register(signupReq);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/signup_oauth")
+    public ResponseEntity<Object> registerMemberByOAuth(@Valid @RequestBody OAuthSignupReq signupReq) {
+        oAuthSignupUseCase.register(signupReq);
         return ResponseEntity.ok().build();
     }
 

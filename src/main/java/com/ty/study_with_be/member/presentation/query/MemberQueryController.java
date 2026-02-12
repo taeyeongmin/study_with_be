@@ -1,7 +1,7 @@
-package com.ty.study_with_be.member.presentation;
+package com.ty.study_with_be.member.presentation.query;
 
-import com.ty.study_with_be.member.presentation.res.MemberInfoRes;
-import com.ty.study_with_be.member.service.MemberService;
+import com.ty.study_with_be.member.application.query.GetMyInfoUseCase;
+import com.ty.study_with_be.member.presentation.query.dto.MemberInfoRes;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,14 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/member")
 @Tag(name = "회원", description = "회원 API")
-public class MemberController {
+public class MemberQueryController {
 
-    private final MemberService memberService;
+    private final GetMyInfoUseCase getMyInfoUseCase;
 
     @GetMapping("/me")
     public ResponseEntity<MemberInfoRes> memberInfo(@AuthenticationPrincipal User principal){
         Long memberId = Long.parseLong(principal.getUsername());
-        MemberInfoRes memberInfo = memberService.getMemberInfo(memberId);
+        MemberInfoRes memberInfo = getMyInfoUseCase.getMemberInfo(memberId);
 
         return ResponseEntity.status(HttpStatus.OK).body(memberInfo);
     }

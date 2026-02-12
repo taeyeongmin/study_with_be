@@ -62,6 +62,19 @@ public class StudyGroupQueryService {
         );
     }
 
+    /**
+     * 스터디 그룹 내 회원 목록 조회
+     *
+     * @param studyGroupId
+     * @return
+     */
+    public StudyMemberListRes getStudyMemberList(Long studyGroupId) {
+
+        List<StudyMemberItem> studyMemberList = groupQueryRepository.findStudyMemberList(studyGroupId);
+
+        return new StudyMemberListRes(studyMemberList);
+    }
+
 
     /**
      * 해당 스터디 그룹 내 나의 정보 조회
@@ -82,15 +95,45 @@ public class StudyGroupQueryService {
 
         Optional<Long> joinRequestId =
                 joinRequestQueryRepository.findPendingJoinRequestId(groupId, memberId);
-        
-        return joinRequestId.map(MyStudyGroupStatusRes::pending).orElseGet(MyStudyGroupStatusRes::none);
 
+        return joinRequestId.map(MyStudyGroupStatusRes::pending).orElseGet(MyStudyGroupStatusRes::none);
     }
 
-    public StudyMemberListRes getStudyMemberList(Long studyGroupId) {
+    /**
+     * 회원의 참여중인 그룹 갯수(방장X)*
+     * @param memberId
+     * @return int
+     */
+    public int countByMemberIdJoined(Long memberId) {
 
-        List<StudyMemberItem> studyMemberList = groupQueryRepository.findStudyMemberList(studyGroupId);
+        return groupQueryRepository.countByMemberIdJoined(memberId);
+    }
 
-        return new StudyMemberListRes(studyMemberList);
+    /**
+     * 회원의 참여중인 그룹 갯수(방장O)*
+     * @param memberId
+     * @return int
+     */
+    public int countByMemberIdOperate(Long memberId) {
+
+        return groupQueryRepository.countByMemberIdOperate(memberId);
+    }
+
+    public MyStudyGroupListRes getMyGroupList(
+            Long memberId, MyStudyGroupListReq request, Pageable pageable
+    ) {
+
+        Page<MyStudyGroupListItem> page =
+                groupQueryRepository.findMyStudyGroups(memberId, request.getOperationFilter(), pageable);
+
+        return new MyStudyGroupListRes(
+                page.getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.hasNext()
+        );
+
     }
 }

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "스터디 그룹 공지")
+@Tag(name = "스터디 공지")
 @RequestMapping("/api/study_group/{studyGroupId}/notice")
 public class StudyNoticeQueryController {
 

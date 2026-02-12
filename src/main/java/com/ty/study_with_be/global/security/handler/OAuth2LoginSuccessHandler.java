@@ -1,12 +1,11 @@
 package com.ty.study_with_be.global.security.handler;
 
-import com.ty.study_with_be.auth.presentation.req.SignupReq;
 import com.ty.study_with_be.global.security.token.JwtTokenProvider;
 import com.ty.study_with_be.global.security.token.OAuth2ExchangeTokenStore;
 import com.ty.study_with_be.global.security.token.OAuth2TicketPayload;
+import com.ty.study_with_be.member.application.query.GetMyInfoUseCase;
 import com.ty.study_with_be.member.domain.model.AuthType;
 import com.ty.study_with_be.member.domain.model.Member;
-import com.ty.study_with_be.member.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +29,7 @@ import java.util.UUID;
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final MemberService memberService;
+    private final GetMyInfoUseCase getMyInfoUseCase;
     private final OAuth2ExchangeTokenStore oAuth2ExchangeTokenStore;
 
     @Value("${kakao.redirect-url}")
@@ -52,32 +51,15 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         }
         String providerUserId = String.valueOf(kakaoId);
 
-        String nickname = "kakao_" + providerUserId;
-        String email = null;
-        Object accountObj = attributes.get("kakao_account");
-        if (accountObj instanceof Map<?, ?> account) {
-            Object profileObj = account.get("profile");
-            if (profileObj instanceof Map<?, ?> profile) {
-                Object nickObj = profile.get("nickname");
-                if (nickObj != null) {
-                    nickname = String.valueOf(nickObj);
-                }
-            }
-            Object emailObj = account.get("email");
-            if (emailObj != null) {
-                email = String.valueOf(emailObj);
-            }
+        // 기존 소셜 회원 여부 검증 후 없으면 oAuth 인증 정보만 담아서 리다이렉트
+        if (!getMyInfoUseCase.existsSocialMember(AuthType.KAKAO, providerUserId)) {
+
+            String url = REDIRECT_URL + "?authType=" + AuthType.KAKAO+"&providerUserId="+providerUserId;
+            response.sendRedirect(url);
+            return;
         }
 
-        if (!memberService.existsSocialMember(AuthType.KAKAO, providerUserId)) {
-            SignupReq signupReq = new SignupReq();
-            signupReq.setAuthType(AuthType.KAKAO);
-            signupReq.setProviderUserId(providerUserId);
-            signupReq.setNickname(nickname);
-            memberService.register(signupReq);
-        }
-
-        Member member = memberService.findSocialMember(AuthType.KAKAO, providerUserId);
+        Member member = getMyInfoUseCase.findSocialMember(AuthType.KAKAO, providerUserId);
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         String accessToken = jwtTokenProvider.createAccessToken(
