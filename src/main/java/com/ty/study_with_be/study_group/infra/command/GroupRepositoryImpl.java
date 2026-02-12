@@ -18,7 +18,6 @@ public class GroupRepositoryImpl implements GroupRepository {
 
     private static final List<OperationStatus> ACTIVE_STATUSES =
             List.of(
-                    OperationStatus.PREPARING,
                     OperationStatus.ONGOING
             );
 

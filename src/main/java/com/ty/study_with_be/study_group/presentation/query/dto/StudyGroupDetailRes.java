@@ -48,7 +48,7 @@ public class StudyGroupDetailRes {
     @Schema(description = "모집 상태명", example = "모집중")
     private String recruitStatusNm;
 
-    @Schema(description = "운영 상태", example = "PREPARING")
+    @Schema(description = "운영 상태", example = "ONGOING")
     private OperationStatus operationStatus;
     @Schema(description = "운영 상태명", example = "준비중")
     private String operationStatusNm;
@@ -66,6 +66,14 @@ public class StudyGroupDetailRes {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    @Schema(description = "가입 신청 가능 여부")
+    private boolean canRequestJoin;
+    @Schema(description = "모집 마감 가능 여부")
+    private boolean canCloseRecruit;
+    @Schema(description = "모집 재개 가능 여부")
+    private boolean canReopenRecruit;
+
 
     public StudyGroupDetailRes(
             Long studyGroupId,
@@ -86,7 +94,10 @@ public class StudyGroupDetailRes {
             String ownerId,
             String ownerNickname,
             LocalDateTime createdAt,
-            LocalDateTime updatedAt
+            LocalDateTime updatedAt,
+            Boolean canRequestJoin,
+            Boolean canCloseRecruit,
+            Boolean canReopenRecruit
     ) {
         this.studyGroupId = studyGroupId;
         this.title = title;
@@ -109,6 +120,7 @@ public class StudyGroupDetailRes {
 
         this.operationStatus = operationStatus;
         this.operationStatusNm = operationStatus.getCodeNm();
+
         this.applyDeadlineAt = applyDeadlineAt;
 
         this.ownerNo = ownerNo;
@@ -117,5 +129,9 @@ public class StudyGroupDetailRes {
 
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+
+        this.canRequestJoin = Boolean.TRUE.equals(canRequestJoin);
+        this.canCloseRecruit = Boolean.TRUE.equals(canCloseRecruit);
+        this.canReopenRecruit = Boolean.TRUE.equals(canReopenRecruit);
     }
 }

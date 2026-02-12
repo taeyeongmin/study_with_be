@@ -17,11 +17,7 @@ public class RequestJoinPolicy {
 
     public void validate(StudyGroup studyGroup, Long requesterId){
 
-        if (studyGroup.isFull())
-            throw new DomainException(ErrorCode.CAPACITY_EXCEEDED);
-
-        if(!studyGroup.isRecruiting())
-            throw new DomainException(ErrorCode.NOT_RECRUITING);
+        studyGroup.validateRecruitable();
 
         if (studyGroupQueryRepository.existsMember(studyGroup.getStudyGroupId(), requesterId))
             throw new DomainException(ErrorCode.ALREADY_JOINED);

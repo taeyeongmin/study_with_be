@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.security.PermitAll;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -57,7 +58,7 @@ public class NotificationQueryController {
     )
     public MyNotificationListRes getMyNotificationList(
             @AuthenticationPrincipal User principal,
-            @ModelAttribute MyNotificationListReq request
+            @ParameterObject @ModelAttribute MyNotificationListReq request
     ) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
 

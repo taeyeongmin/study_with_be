@@ -19,6 +19,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -115,6 +116,10 @@ public class StudyGroup extends BaseTimeEntity {
     @Transient
     private final List<DomainEvent> domainEvents = new ArrayList<>();
 
+    @Column(name = "closed_at")
+    @Comment("운영 종료일")
+    private LocalDateTime closedAt;
+
     public static StudyGroup create(
         String title,
         String category,
@@ -140,7 +145,7 @@ public class StudyGroup extends BaseTimeEntity {
         group.currentCount = 1; // 방장 포함
         group.description = description;
         group.recruitStatus = RecruitStatus.RECRUITING;
-        group.operationStatus = OperationStatus.PREPARING;
+        group.operationStatus = OperationStatus.ONGOING;
         group.applyDeadlineAt = applyDeadlineAt;
         group.schedules = schedules;
         group.ownerId = memberId;
@@ -169,9 +174,7 @@ public class StudyGroup extends BaseTimeEntity {
 
         if (!studyMember.hasManageRole()) throw new DomainException(ErrorCode.HAS_NOT_PERMISSION);
 
-        if (!isRecruiting()) throw new DomainException(ErrorCode.NOT_RECRUITING);
-
-        if (isFull()) throw new DomainException(ErrorCode.CAPACITY_EXCEEDED);
+        this.validateRecruitable();
     }
 
     public void updateInfo(String title, String category, String topic, String region, StudyMode studyMode, int capacity, String description, LocalDate applyDeadlineAt, Set<DayOfWeek> schedules, Long memberId) {
@@ -206,14 +209,14 @@ public class StudyGroup extends BaseTimeEntity {
         this.schedules = schedules;
     }
 
-    public boolean isOwner(Long loginMemberId) {
-        return this.ownerId.equals(loginMemberId);
+    private boolean isLeader(Long currentMemberId) {
+        return this.ownerId.equals(currentMemberId);
     }
 
-    public void validDelete() {
-        if (recruitStatus != RecruitStatus.RECRUITING) {
-            throw new DomainException(ErrorCode.NOT_RECRUITING);
-        }
+    public void validDelete(Long currentMemberId) {
+
+        if (!isLeader(currentMemberId))
+            throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
 
         if (currentCount != 1) {
             throw new DomainException(ErrorCode.NOT_ONLY_OWNER);
@@ -224,8 +227,42 @@ public class StudyGroup extends BaseTimeEntity {
         return this.capacity == this.currentCount;
     }
 
-    public boolean isRecruiting() {
-        return this.recruitStatus.equals(RecruitStatus.RECRUITING);
+    /**
+     * 가입 신청, 가입 수락 시 최종 모집 상태에 대한 체크(아래 3개 값)
+     * - RecruitStatus (수동으로 방장이 변경 가능)
+     * - 정원 수
+     * - 모집 마감일
+     * @return
+     */
+    public void validateRecruitable() {
+
+        RecruitAvailability availability = getRecruitAvailability();
+
+        if (availability != RecruitAvailability.OPEN) {
+            switch (availability) {
+                case CLOSED_FULL -> throw new DomainException(ErrorCode.CAPACITY_EXCEEDED);
+                case CLOSED_DEADLINE -> throw new DomainException(ErrorCode.DEADLINE_EXCEEDED);
+                case CLOSED_MANUAL -> throw new DomainException(ErrorCode.NOT_RECRUITING);
+            }
+        }
+    }
+
+    private RecruitAvailability getRecruitAvailability() {
+
+        if (this.recruitStatus != RecruitStatus.RECRUITING) {
+            return RecruitAvailability.CLOSED_MANUAL;
+        }
+
+        if (this.applyDeadlineAt != null &&
+                LocalDate.now().isAfter(this.applyDeadlineAt)) {
+            return RecruitAvailability.CLOSED_DEADLINE;
+        }
+
+        if (isFull()) {
+            return RecruitAvailability.CLOSED_FULL;
+        }
+
+        return RecruitAvailability.OPEN;
     }
 
     public StudyMember findStudyMemberByStudyMemberId(Long studyMemberId) {
@@ -291,10 +328,6 @@ public class StudyGroup extends BaseTimeEntity {
         this.raise(ChangeRoleEvent.of(studyGroupId, targetMember.getMemberId(), currentMemberId));
     }
 
-    public boolean isLeader(Long memberId) {
-        return getLeader().getMemberId().equals(memberId);
-    }
-
     /**
      * 이벤트를 꺼내면서 비운다(중복 발행 방지).
      */
@@ -321,8 +354,6 @@ public class StudyGroup extends BaseTimeEntity {
 
     private void increaseMemberCount() {
         this.currentCount += 1;
-
-        // if (isFull()) this.recruitStatus = RecruitStatus.RECRUIT_END;
     }
 
     private void leaderLeave(Long memberId) {

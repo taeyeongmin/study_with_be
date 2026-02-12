@@ -27,115 +27,274 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
     private final EntityManager em;
 
     @Override
-    public Optional<StudyGroupDetailRes> findDetail(Long studyGroupId) {
+    public Optional<StudyGroupDetailRes> findDetail(Long studyGroupId, Long currentMemberId) {
 
         return em.createQuery("""
-            select new com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupDetailRes(
-                sg.studyGroupId,
-                sg.title,
-    
-                sg.category,
-                cat.codeNm,
-    
-                sg.topic,
-    
-                sg.region,
-                reg.codeNm,
-    
-                sg.studyMode,
-                sg.capacity,
-                sg.currentCount,
-                sg.description,
-    
-                sg.recruitStatus,
-                sg.operationStatus,
-                sg.applyDeadlineAt,
-    
-                m.memberId,
-                m.loginId,
-                m.nickname,
-    
-                sg.createdAt,
-                sg.updatedAt
-            )
-            from StudyGroup sg
-            join Member m
-                on m.memberId = sg.ownerId
-            left join CommonCode cat
-                on cat.code = sg.category
-               and cat.useYn = true
-               and cat.depth = 2
-            left join CommonCode reg
-                on reg.code = sg.region
-               and reg.useYn = true
-               and reg.depth = 2
-            where sg.studyGroupId = :id
-        """, StudyGroupDetailRes.class)
+        select new com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupDetailRes(
+            sg.studyGroupId,
+            sg.title,
+
+            sg.category,
+            cat.codeNm,
+
+            sg.topic,
+
+            sg.region,
+            reg.codeNm,
+
+            sg.studyMode,
+            sg.capacity,
+            sg.currentCount,
+            sg.description,
+            case
+                when sg.recruitStatus =
+                    com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus.RECRUITING
+                     and (sg.applyDeadlineAt is null or sg.applyDeadlineAt >= current_date)
+                     and sg.currentCount < sg.capacity
+                then com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus.RECRUITING
+                else com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus.RECRUIT_END
+            end,
+            sg.operationStatus,
+            sg.applyDeadlineAt,
+
+            m.memberId,
+            m.loginId,
+            m.nickname,
+
+            sg.createdAt,
+            sg.updatedAt,
+
+            /* canRequestJoin */
+            case
+                when :currentMemberId is null then false                
+                when not (
+                    sg.recruitStatus =
+                        com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus.RECRUITING
+                    and (sg.applyDeadlineAt is null or sg.applyDeadlineAt >= current_date)
+                    and sg.currentCount < sg.capacity
+                ) then false
+                when exists (
+                    select sm.studyMemberId
+                    from StudyMember sm
+                    where sm.studyGroup.studyGroupId = sg.studyGroupId
+                      and sm.memberId = :currentMemberId
+                ) then false
+                when exists (
+                    select jr.joinRequestId
+                    from JoinRequest jr
+                    where jr.studyGroupId = sg.studyGroupId
+                      and jr.requesterId = :currentMemberId
+                      and jr.status =
+                        com.ty.study_with_be.join_request.domain.model.enums.JoinRequestStatus.PENDING
+                ) then false
+                else true
+            end,
+
+            /* canCloseRecruit (방장만) */
+            case
+                when :currentMemberId is null then false
+                when sg.recruitStatus <>
+                    com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus.RECRUITING
+                then false
+                when exists (
+                    select sm
+                    from StudyMember sm
+                    where sm.studyGroup.studyGroupId = sg.studyGroupId
+                      and sm.memberId = :currentMemberId
+                      and sm.role =
+                          com.ty.study_with_be.study_group.domain.model.enums.StudyRole.LEADER
+                ) then true
+                else false
+            end,
+
+            /* canReopenRecruit (방장만) */
+            case
+               when :currentMemberId is null then false
+               when sg.recruitStatus <>
+                   com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus.RECRUIT_END
+               then false
+               when (sg.applyDeadlineAt is not null and sg.applyDeadlineAt < current_date) then false
+               when sg.currentCount >= sg.capacity then false
+               when exists (
+                   select sm
+                   from StudyMember sm
+                   where sm.studyGroup.studyGroupId = sg.studyGroupId
+                     and sm.memberId = :currentMemberId
+                     and sm.role =
+                         com.ty.study_with_be.study_group.domain.model.enums.StudyRole.LEADER
+               ) then true
+               else false
+            end
+        )
+        from StudyGroup sg
+        join Member m
+            on m.memberId = sg.ownerId
+        left join CommonCode cat
+            on cat.code = sg.category
+           and cat.useYn = true
+           and cat.depth = 2
+        left join CommonCode reg
+            on reg.code = sg.region
+           and reg.useYn = true
+           and reg.depth = 2
+        where sg.studyGroupId = :id
+    """, StudyGroupDetailRes.class)
                 .setParameter("id", studyGroupId)
+                .setParameter("currentMemberId", currentMemberId)
                 .getResultStream()
                 .findFirst();
     }
 
     @Override
-    public Page<StudyGroupListItem> findStudyGroups(String category, String topic, String region, StudyMode studyMode, RecruitStatus recruitStatus, Pageable pageable) {
+    public Page<StudyGroupListItem> findStudyGroups(
+            String category,
+            String topic,
+            String region,
+            StudyMode studyMode,
+            RecruitStatus recruitStatus,
+            Pageable pageable,
+            Long currentMemberId
+            ) {
 
-        //  where 구성
         StringBuilder where = new StringBuilder(" where 1=1 ");
-
         Map<String, Object> params = new HashMap<>();
 
+        // -----------------------------
+        // 기본 필터
+        // -----------------------------
         if (StringUtils.hasText(category)) {
             where.append(" and sg.category = :category ");
             params.put("category", category);
         }
+
         if (StringUtils.hasText(topic)) {
-            // 요구사항: 주제 필터(보통 키워드 검색이 자연스러움)
             where.append(" and sg.topic like :topic ");
             params.put("topic", "%" + topic.trim() + "%");
         }
+
         if (StringUtils.hasText(region)) {
             where.append(" and sg.region = :region ");
             params.put("region", region);
         }
+
         if (studyMode != null) {
             where.append(" and sg.studyMode = :studyMode ");
             params.put("studyMode", studyMode);
         }
+
+        // -----------------------------
+        // 모집 상태 필터 (연산 기반)
+        // -----------------------------
         if (recruitStatus != null) {
-            where.append(" and sg.recruitStatus = :recruitStatus ");
-            params.put("recruitStatus", recruitStatus);
+
+            if (recruitStatus == RecruitStatus.RECRUITING) {
+
+                where.append("""
+                and sg.recruitStatus = :recruitingStatus
+                and (sg.applyDeadlineAt is null or sg.applyDeadlineAt >= current_date)
+                and sg.currentCount < sg.capacity
+            """);
+
+                params.put("recruitingStatus", RecruitStatus.RECRUITING);
+
+            } else if (recruitStatus == RecruitStatus.RECRUIT_END) {
+
+                where.append("""
+                and (
+                        sg.recruitStatus <> :recruitingStatus
+                     or (sg.applyDeadlineAt is not null and sg.applyDeadlineAt < current_date)
+                     or sg.currentCount >= sg.capacity
+                    )
+            """);
+
+                params.put("recruitingStatus", RecruitStatus.RECRUITING);
+            }
         }
 
-        // ---- content query (목록) ----
+        // -----------------------------
+        // 운영 상태 필터
+        // CLOSED는 방장/매니저만 조회 가능
+        // -----------------------------
+        if (currentMemberId == null) {
+
+            // 비로그인 → ONGOING만
+            where.append("""
+            and sg.operationStatus =
+                com.ty.study_with_be.study_group.domain.model.enums.OperationStatus.ONGOING
+        """);
+
+        } else {
+
+            where.append("""
+            and (
+                    sg.operationStatus =
+                        com.ty.study_with_be.study_group.domain.model.enums.OperationStatus.ONGOING
+                 or (
+                        sg.operationStatus =
+                            com.ty.study_with_be.study_group.domain.model.enums.OperationStatus.CLOSED
+                        and exists (
+                            select sm.studyMemberId
+                            from StudyMember sm
+                            where sm.studyGroup.studyGroupId = sg.studyGroupId
+                              and sm.memberId = :currentMemberId
+                              and sm.role in (
+                                  com.ty.study_with_be.study_group.domain.model.enums.StudyRole.LEADER
+                              )
+                        )
+                    )
+                )
+        """);
+
+            params.put("currentMemberId", currentMemberId);
+        }
+
+        // -----------------------------
+        // Content Query
+        // -----------------------------
         String contentJpql = """
-            select new com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupListItem(
-                sg.studyGroupId,
-                sg.title,
-                sg.category,
-                cat.codeNm,
-                sg.topic,
-                sg.recruitStatus,
-                case sg.recruitStatus
-                    when com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus.RECRUITING
-                        then '모집중'
-                    else '모집마감'
-                end,
-                sg.description,
-                sg.capacity,
-                sg.currentCount,
-                case
-                    when sg.applyDeadlineAt is null then null
-                    else cast(function('datediff', sg.applyDeadlineAt, current_date) as integer)
-                end
-            )
-            from StudyGroup sg
-            left join CommonCode cat
-                on cat.code = sg.category
-               and cat.useYn = true
-               and cat.depth = 2
-        """ + where + """
-            order by sg.createdAt desc
-        """;
+        select new com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupListItem(
+            sg.studyGroupId,
+            sg.title,
+            sg.category,
+            cat.codeNm,
+            sg.topic,
+            sg.recruitStatus,
+            case
+                when sg.recruitStatus =
+                    com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus.RECRUITING
+                     and (sg.applyDeadlineAt is null or sg.applyDeadlineAt >= current_date)
+                     and sg.currentCount < sg.capacity
+                then '모집중'
+                else '모집마감'
+            end,
+            sg.operationStatus,
+            sg.description,
+            sg.capacity,
+            sg.currentCount,
+            case
+                when sg.applyDeadlineAt is null then null
+                else cast(function('datediff', sg.applyDeadlineAt, current_date) as integer)
+            end,
+            case
+                when :currentMemberId is null then false
+                when exists (
+                    select sm.studyMemberId
+                    from StudyMember sm
+                    where sm.studyGroup.studyGroupId = sg.studyGroupId
+                      and sm.memberId = :currentMemberId
+                )
+                then true
+                else false
+            end
+        )
+        from StudyGroup sg
+        left join CommonCode cat
+            on cat.code = sg.category
+           and cat.useYn = true
+           and cat.depth = 2
+    """ + where + """
+        order by sg.createdAt desc
+    """;
 
         TypedQuery<StudyGroupListItem> contentQuery =
                 em.createQuery(contentJpql, StudyGroupListItem.class);
@@ -147,7 +306,9 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
 
         List<StudyGroupListItem> content = contentQuery.getResultList();
 
-        // count query (총 개수)
+        // -----------------------------
+        // Count Query
+        // -----------------------------
         String countJpql = """
             select count(sg.studyGroupId)
             from StudyGroup sg
@@ -159,8 +320,8 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
         long total = countQuery.getSingleResult();
 
         return new PageImpl<>(content, pageable, total);
-
     }
+
 
     @Override
     public Optional<StudyRole> findRole(Long groupId, Long memberId) {
@@ -317,6 +478,7 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
     public Page<MyStudyGroupListItem> findMyStudyGroups(
             Long memberId,
             List<MyStudyGroupOperationFilter> operationFilter,
+            List<StudyRole> roleFilter,
             Pageable pageable
     ) {
 
@@ -331,6 +493,11 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
 
             where.append(" and sg.operationStatus in(:operationStatus) ");
             params.put("operationStatus", operationStatuses);
+        }
+
+        if (roleFilter != null && !roleFilter.isEmpty()) {
+            where.append(" and sm.role in (:roleFilter) ");
+            params.put("roleFilter", roleFilter);
         }
 
         String contentQuery = """

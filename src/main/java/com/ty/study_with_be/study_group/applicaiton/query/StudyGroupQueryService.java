@@ -27,12 +27,12 @@ public class StudyGroupQueryService {
     private final JoinRequestQueryRepository joinRequestQueryRepository;
     private final GroupRepository groupRepository;
 
-    public StudyGroupDetailRes getDetail(Long studyGroupId) {
+    public StudyGroupDetailRes getDetail(Long studyGroupId,Long currentMemberId) {
 
         StudyGroup studyGroup = groupRepository.findById(studyGroupId).orElseThrow(RuntimeException::new);
         Set<DayOfWeek> schedules = studyGroup.getSchedules();
 
-        StudyGroupDetailRes studyGroupDetailRes = groupQueryRepository.findDetail(studyGroupId)
+        StudyGroupDetailRes studyGroupDetailRes = groupQueryRepository.findDetail(studyGroupId,currentMemberId)
                 .orElseThrow(RuntimeException::new);
 
         studyGroupDetailRes.setSchedules(schedules);
@@ -46,10 +46,11 @@ public class StudyGroupQueryService {
             String region,
             StudyMode studyMode,
             RecruitStatus recruitStatus,
-            Pageable pageable
+            Pageable pageable,
+            Long currentMemberId
     ) {
         Page<StudyGroupListItem> page = groupQueryRepository.findStudyGroups(
-                category, topic, region, studyMode, recruitStatus, pageable
+                category, topic, region, studyMode, recruitStatus, pageable,currentMemberId
         );
 
         return new StudyGroupListRes(
@@ -124,7 +125,12 @@ public class StudyGroupQueryService {
     ) {
 
         Page<MyStudyGroupListItem> page =
-                groupQueryRepository.findMyStudyGroups(memberId, request.getOperationFilter(), pageable);
+                groupQueryRepository.findMyStudyGroups(
+                        memberId,
+                        request.getOperationFilter(),
+                        request.getRoleFilter(),
+                        pageable
+                );
 
         return new MyStudyGroupListRes(
                 page.getContent(),

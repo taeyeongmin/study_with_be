@@ -1,6 +1,7 @@
 package com.ty.study_with_be.study_group.presentation.query.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ty.study_with_be.study_group.domain.model.enums.OperationStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
@@ -31,6 +32,8 @@ public class StudyGroupListItem {
     private RecruitStatus recruitStatus;
     @Schema(description = "모집 상태명", example = "모집중")
     private String recruitStatusNm;
+    @Schema(description = "운영 상태", example = "ONGOING")
+    private OperationStatus operationStatus;
 
     @Schema(description = "설명", example = "주 2회 온라인 스터디입니다.")
     private String description;
@@ -41,6 +44,9 @@ public class StudyGroupListItem {
 
     @Getter(AccessLevel.NONE)
     private Integer dDay;
+    
+    @Schema(description = "가입 여부")
+    private boolean joined;
 
     @Schema(description = "D-Day(마감일까지 남은 일수)", example = "7")
     @JsonProperty("dDay")

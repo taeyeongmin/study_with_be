@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -19,8 +20,10 @@ import java.util.Objects;
     indexes = {
         @Index(name = "idx_study_member_study", columnList = "study_group_id"),
         @Index(name = "idx_study_member_member", columnList = "member_id"),
-        @Index(name = "idx_study_member_role", columnList = "role")
+        @Index(name = "idx_study_member_role", columnList = "role"),
+        @Index(name = "idx_study_member_group_joined", columnList = "study_group_id, created_at")
     }
+
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

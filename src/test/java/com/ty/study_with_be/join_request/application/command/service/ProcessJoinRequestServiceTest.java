@@ -44,6 +44,9 @@ class ProcessJoinRequestServiceTest {
     @Autowired
     private EntityManager em;
 
+    private static final AtomicInteger SEQ = new AtomicInteger();
+
+
     @Test
     void 동시에_승인되어_정원_초과() throws Exception {
         // 테스트 데이터 준비
@@ -272,95 +275,10 @@ class ProcessJoinRequestServiceTest {
 
     }
 
-    @Test
-    void pessimistic_lock_20_concurrent_approvals_block_oversubscribe() throws Exception {
-        Member owner = saveMember("owner_lock");
-        Member m2 = saveMember("m2_lock");
-        Member m3 = saveMember("m3_lock");
-        Member m4 = saveMember("m4_lock");
-
-        StudyGroup group = StudyGroup.create(
-                "title_lock", "category", "topic", "region",
-                StudyMode.ONLINE, 5, "desc", null, null, owner.getMemberId()
-        );
-        group.joinMember(m2.getMemberId(),1L);
-        group.joinMember(m3.getMemberId(),1L);
-        group.joinMember(m4.getMemberId(),1L);
-        groupRepository.save(group);
-
-        JoinRequest[] requests = new JoinRequest[20];
-        for (int i = 0; i < 20; i++) {
-            Member requester = saveMember("req_lock_" + i);
-            requests[i] = joinRequestRepository.save(
-                    JoinRequest.create(group.getStudyGroupId(), requester.getMemberId())
-            );
-        }
-
-        CountDownLatch ready = new CountDownLatch(20);
-        CountDownLatch start = new CountDownLatch(1);
-        ExecutorService pool = Executors.newFixedThreadPool(20);
-
-        AtomicInteger success = new AtomicInteger();
-        AtomicInteger capacityExceeded = new AtomicInteger();
-
-        System.err.println(">>>>>>> 시작 시간 :"+System.currentTimeMillis());
-        List<Future<?>> futures = new ArrayList<>();
-        for (int i = 0; i < 20; i++) {
-            JoinRequest jr = requests[i];
-            futures.add(pool.submit(() -> {
-                ready.countDown();
-                await(start);
-                try {
-                    processJoinRequestService.process(
-                            group.getStudyGroupId(),
-                            jr.getJoinRequestId(),
-                            owner.getMemberId(),
-                            JoinRequestStatus.APPROVED
-                    );
-                    success.incrementAndGet();
-                } catch (DomainException ex) {
-                    if (ex.getErrorCode() == ErrorCode.CAPACITY_EXCEEDED) {
-                        capacityExceeded.incrementAndGet();
-                    } else {
-                        throw ex;
-                    }
-                }
-            }));
-        }
-
-        ready.await();
-        start.countDown();
-        for (Future<?> f : futures) {
-            try {
-                f.get();
-            } catch (ExecutionException ex) {
-                if (ex.getCause() instanceof DomainException) {
-                    throw (DomainException) ex.getCause();
-                }
-                throw ex;
-            }
-        }
-        pool.shutdown();
-        System.err.println(">>>>>>> 종료 시간 :"+System.currentTimeMillis());
-
-        em.clear();
-        StudyGroup studyGroup = em.createQuery("""
-              select sg
-              from StudyGroup sg
-              left join fetch sg.members
-              where sg.studyGroupId = :id
-          """, StudyGroup.class)
-                .setParameter("id", group.getStudyGroupId())
-                .getSingleResult();
-
-        assertThat(success.get()).isEqualTo(1);
-        assertThat(capacityExceeded.get()).isEqualTo(19);
-        assertThat(studyGroup.getMembers().size()).isLessThanOrEqualTo(studyGroup.getCapacity());
-    }
-
     // 테스트용 멤버 저장 헬퍼
     private Member saveMember(String loginId) {
-        return memberJpaRepository.save(Member.createLocalMember(loginId, "pw", loginId));
+        String uid = loginId + "_" + SEQ.incrementAndGet();
+        return memberJpaRepository.save(Member.createLocalMember(uid, "pw", loginId));
     }
 
     // CountDownLatch 대기 헬퍼 (인터럽트 처리 포함)

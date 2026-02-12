@@ -15,14 +15,11 @@ public class DeleteGroupService implements DeleteGroupUseCase {
     private final GroupRepository groupRepository;
 
     @Override
-    public void deleteGroup(Long studyGroupId, Long loginMemberId) {
+    public void deleteGroup(Long studyGroupId, Long currentMemberId) {
 
         StudyGroup studyGroup = groupRepository.findById(studyGroupId).orElseThrow(() -> new RuntimeException("해당 그룹이 없습니다."));
 
-        if (!studyGroup.isOwner(loginMemberId))
-            throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
-
-        studyGroup.validDelete();
+        studyGroup.validDelete(currentMemberId);
 
         groupRepository.delete(studyGroup);
     }

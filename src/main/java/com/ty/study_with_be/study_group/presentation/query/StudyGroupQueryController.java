@@ -62,12 +62,15 @@ public class StudyGroupQueryController {
             @RequestParam(required = false) StudyMode studyMode,
             @RequestParam(required = false) RecruitStatus recruitStatus,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal User user
     ) {
         Pageable pageable = PageRequest.of(page, size);
+        Long currentMemberId = null;
+        if (user != null) currentMemberId = Long.valueOf(user.getUsername());
 
         return queryService.getStudyGroupList(
-                category, topic, region, studyMode, recruitStatus, pageable
+                category, topic, region, studyMode, recruitStatus, pageable,currentMemberId
         );
     }
 
@@ -82,9 +85,13 @@ public class StudyGroupQueryController {
     )
     @Parameter(name = "studyGroupId", description = "스터디 그룹 ID", in = ParameterIn.PATH)
     public StudyGroupDetailRes detailGroup(
-            @PathVariable Long studyGroupId
+            @PathVariable Long studyGroupId,
+            @AuthenticationPrincipal User user
     ){
-        StudyGroupDetailRes detail = queryService.getDetail(studyGroupId);
+        Long currentMemberId = null;
+        if (user != null) currentMemberId = Long.valueOf(user.getUsername());
+
+        StudyGroupDetailRes detail = queryService.getDetail(studyGroupId,currentMemberId);
 
         return detail;
     }
