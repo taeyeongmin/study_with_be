@@ -11,7 +11,10 @@ public enum EventType {
         , MEMBER_LEAVE("회원 탈퇴")
         , NOTICE_CREATE("모임 공지 등록")
         , MEMBER_KICK("회원 강제 퇴장")
-        , ROLE_CHANGE("역할 변경");
+        , ROLE_CHANGE("역할 변경")
+        , END_RECRUITMENT("모집 종료")
+        , RESUME_RECRUITMENT("모집 재개")
+        , END_OPERATION("운영 종료");
 
         private final String eventName;
 

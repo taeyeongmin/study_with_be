@@ -5,9 +5,7 @@ import com.ty.study_with_be.global.entity.BaseTimeEntity;
 import com.ty.study_with_be.global.error.ErrorCode;
 import com.ty.study_with_be.global.event.domain.DomainEvent;
 import com.ty.study_with_be.global.exception.DomainException;
-import com.ty.study_with_be.study_group.domain.event.ChangeRoleEvent;
-import com.ty.study_with_be.study_group.domain.event.MemberKickEvent;
-import com.ty.study_with_be.study_group.domain.event.MemberLeaveEvent;
+import com.ty.study_with_be.study_group.domain.event.*;
 import com.ty.study_with_be.study_group.domain.model.enums.*;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -209,9 +207,6 @@ public class StudyGroup extends BaseTimeEntity {
         this.schedules = schedules;
     }
 
-    private boolean isLeader(Long currentMemberId) {
-        return this.ownerId.equals(currentMemberId);
-    }
 
     public void validDelete(Long currentMemberId) {
 
@@ -228,7 +223,7 @@ public class StudyGroup extends BaseTimeEntity {
     }
 
     /**
-     * 가입 신청, 가입 수락 시 최종 모집 상태에 대한 체크(아래 3개 값)
+     * 모집 상태: 모집 중이란 판단을 아래의 값을 통해 최종 판단
      * - RecruitStatus (수동으로 방장이 변경 가능)
      * - 정원 수
      * - 모집 마감일
@@ -328,6 +323,10 @@ public class StudyGroup extends BaseTimeEntity {
         this.raise(ChangeRoleEvent.of(studyGroupId, targetMember.getMemberId(), currentMemberId));
     }
 
+    public boolean isLeader(Long memberId) {
+        return getLeader().getMemberId().equals(memberId);
+    }
+
     /**
      * 이벤트를 꺼내면서 비운다(중복 발행 방지).
      */
@@ -406,5 +405,36 @@ public class StudyGroup extends BaseTimeEntity {
 
     private void raise(DomainEvent event) {
         this.domainEvents.add(event);
+    }
+
+
+    public void endRecruitment(Long currentMemberId) {
+
+        if (!isLeader(currentMemberId)) throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
+        if (this.recruitStatus != RecruitStatus.RECRUITING) throw new DomainException(ErrorCode.NOT_RECRUITING);
+
+        this.recruitStatus = RecruitStatus.RECRUIT_END;
+        this.raise(RecruitmentEndEvent.of(this.studyGroupId, currentMemberId));
+    }
+
+    public void resumeRecruitment(Long currentMemberId) {
+
+        if (!isLeader(currentMemberId)) throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
+        if (this.recruitStatus == RecruitStatus.RECRUITING) throw new DomainException(ErrorCode.NOT_RECRUIT_END);
+        if (isFull()) throw new DomainException(ErrorCode.CAPACITY_EXCEEDED);
+
+        this.recruitStatus = RecruitStatus.RECRUITING;
+
+        this.raise(RecruitmentResumeEvent.of(this.studyGroupId, currentMemberId));
+    }
+
+    public void endOperation(Long currentMemberId) {
+
+        if (!isLeader(currentMemberId)) throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
+        if (this.recruitStatus == RecruitStatus.RECRUITING) throw new DomainException(ErrorCode.NOT_RECRUIT_END);
+
+        this.operationStatus = OperationStatus.CLOSED;
+
+        this.raise(OperationEndEvent.of(this.studyGroupId, currentMemberId));
     }
 }

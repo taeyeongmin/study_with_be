@@ -1,8 +1,6 @@
 package com.ty.study_with_be.study_group.presentation.command;
 
-import com.ty.study_with_be.study_group.applicaiton.command.CreateGroupUseCase;
-import com.ty.study_with_be.study_group.applicaiton.command.DeleteGroupUseCase;
-import com.ty.study_with_be.study_group.applicaiton.command.UpdateGroupUseCase;
+import com.ty.study_with_be.study_group.applicaiton.command.*;
 import com.ty.study_with_be.study_group.presentation.command.dto.StudyGroupOperationInfoUpdateReq;
 import com.ty.study_with_be.study_group.presentation.command.dto.StudyGroupReq;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,7 +22,9 @@ public class StudyGroupMngController {
     private final CreateGroupUseCase createGroupUseCase;
     private final UpdateGroupUseCase updateGroupUseCase;
     private final DeleteGroupUseCase deleteGroupUseCase;
-
+    private final RecruitEndUseCase recruitEndUseCase;
+    private final RecruitResumeUseCase recruitResumeUseCase;
+    private final OperationEndUseCase operationEndUseCase;
 
     @PreAuthorize("isAuthenticated()")
     @Operation(
@@ -107,7 +107,7 @@ public class StudyGroupMngController {
                     - `스터디그룹을 제거한다.`
                     ---
                     ## 상세 설명
-                    - **방장만 삭제 가능하다.
+                    - **방장만 삭제 가능하다.**
                     - **방장 혼자만 참여 중일 때만 삭제 가능하다.**
                     - **삭제 시 물리 삭제를 수행한다.**
                     """
@@ -121,4 +121,73 @@ public class StudyGroupMngController {
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @PatchMapping("/{studyGroupId}/recruit_end")
+    @Operation(
+            summary = "스터디그룹 모집 종료",
+            description = """
+                    ## 기능 설명
+                    - `모집 상태를 종료로 전환한다.`
+                    ---
+                    ## 상세 설명
+                    - **모든 가입 신청에 대해 거절 처리를 수행.**
+                    - **방장만 처리 가능하다.**
+                    - **모집중인 상태만 가능하다..**
+                    """
+    )
+    public ResponseEntity<Void> recruitEnd(
+            @PathVariable Long studyGroupId
+            , @AuthenticationPrincipal User principal
+    ) {
+        recruitEndUseCase.endRecruitment(studyGroupId, Long.valueOf(principal.getUsername()));
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PatchMapping("/{studyGroupId}/recruit_resume")
+    @Operation(
+            summary = "스터디그룹 모집 재개",
+            description = """
+                    ## 기능 설명
+                    - `모집 상태를 모집으로 전환한다.`
+                    ---
+                    ## 상세 설명
+                    - **방장만 처리 가능하다.**
+                    - **모집종료인 상태만 가능하다.**
+                    - **모집 마감 기간이 지나지 않아야한다.**
+                    - **모집 정원이 초과되지 않아야한다.**
+                    """
+    )
+    public ResponseEntity<Void> recruitResume(
+            @PathVariable Long studyGroupId
+            , @AuthenticationPrincipal User principal
+    ) {
+        recruitResumeUseCase.resumeRecruitment(studyGroupId, Long.valueOf(principal.getUsername()));
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PatchMapping("/{studyGroupId}/operation_end")
+    @Operation(
+            summary = "스터디그룹 운영 종료",
+            description = """
+                    ## 기능 설명
+                    - `운영 상태를 종료로 전환한다.`
+                    ---
+                    ## 상세 설명
+                    - **방장만 처리 가능하다.**
+                    - **모집 종료 상태만 가능하다.**
+                    - **종료한 스터디는 다시 재개할 수 없다.**
+                    """
+    )
+    public ResponseEntity<Void> operationEnd(
+            @PathVariable Long studyGroupId
+            , @AuthenticationPrincipal User principal
+    ) {
+        operationEndUseCase.endOperation(studyGroupId, Long.valueOf(principal.getUsername()));
+
+        return ResponseEntity.ok().build();
+    }
 }

@@ -1,6 +1,9 @@
 package com.ty.study_with_be.notification.application.command.message;
 
 import com.ty.study_with_be.global.event.domain.EventType;
+import com.ty.study_with_be.join_request.domain.model.enums.RejectionReason;
+import com.ty.study_with_be.notification.application.command.strategy.NotificationContext;
+import com.ty.study_with_be.notification.application.command.strategy.recipient.RecipientType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -32,10 +35,17 @@ public enum NotificationMessageTemplate {
             "/study-groups/%d",
             new ParamSource[]{ParamSource.PROCESSOR, ParamSource.REQUESTER}),
 
-    JOIN_REJECTED(EventType.JOIN_REJECT,
+    JOIN_REJECTED_MANUAL(
+            EventType.JOIN_REJECT,
             "[%s]님이 [%s]의 가입 요청을 거절했어요.",
             "/study-groups/%d",
             new ParamSource[]{ParamSource.PROCESSOR, ParamSource.REQUESTER}),
+
+    JOIN_REJECTED_BY_GROUP_CLOSED(
+            EventType.JOIN_REJECT,
+            "스터디 운영 종료로 인해 가입 요청이 자동 거절되었어요.",
+            "/study-groups/%d",
+            new ParamSource[]{}),
 
     FORCED_LEAVE(EventType.MEMBER_KICK,
             "[%s]님이 [%s]님을 강제 탈퇴시켰어요.",
@@ -51,16 +61,40 @@ public enum NotificationMessageTemplate {
     NOTICE_CREATED(EventType.NOTICE_CREATE,
             "[%s]님이 새로운 공지를 등록했어요.",
             "/study-groups/%d/notices",
+            new ParamSource[]{ParamSource.PROCESSOR}),
+
+    // 그룹원 모두: 모집 종료
+    END_RECRUITMENT(EventType.END_RECRUITMENT,
+            "[%s]님이 모집을 종료했어요.",
+            "/study-groups/%d/notices",
+            new ParamSource[]{ParamSource.PROCESSOR}),
+
+    // 그룹원 모두: 모집 종료
+    RESUME_RECRUITMENT(EventType.RESUME_RECRUITMENT,
+            "[%s]님이 모집을 재개했어요.",
+            "/study-groups/%d/notices",
             new ParamSource[]{ParamSource.PROCESSOR});
 
     private final EventType eventType;
-    private final String messageTemplate; // String.format("%s", actorName) 형태
-    private final String linkTemplate;    // String.format("%d", studyGroupId) 형태
+    private final String messageTemplate;
+    private final String linkTemplate;
     private final ParamSource[] paramSources;
 
-    public static NotificationMessageTemplate from(EventType type) {
+    public static NotificationMessageTemplate from(NotificationContext context) {
+
+        EventType eventType = context.getEventType();
+
+        if (eventType == EventType.JOIN_REJECT) {
+
+            if (context.getRejectionReason() == RejectionReason.GROUP_CLOSED) {
+                return JOIN_REJECTED_BY_GROUP_CLOSED;
+            }
+
+            return JOIN_REJECTED_MANUAL;
+        }
+
         return Arrays.stream(values())
-                .filter(v -> v.eventType == type)
+                .filter(v -> v.eventType == eventType)
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("해당 타입이 존재하지 않습니다."));
     }

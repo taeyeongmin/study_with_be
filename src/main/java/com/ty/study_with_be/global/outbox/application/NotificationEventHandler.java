@@ -2,6 +2,7 @@ package com.ty.study_with_be.global.outbox.application;
 
 import com.ty.study_with_be.global.event.domain.EventType;
 import com.ty.study_with_be.global.outbox.application.dto.OutboxPayload;
+import com.ty.study_with_be.join_request.domain.model.enums.RejectionReason;
 
 import java.util.Set;
 
@@ -11,5 +12,5 @@ import java.util.Set;
  */
 public interface NotificationEventHandler {
 
-    void precess(EventType type, OutboxPayload outboxPayload) throws Exception;
+    void precess(EventType type, OutboxPayload outboxPayload, RejectionReason rejectionReason) throws Exception;
 }

@@ -1,6 +1,8 @@
 package com.ty.study_with_be.notification.application.command.policy;
 
 import com.ty.study_with_be.global.event.domain.EventType;
+import com.ty.study_with_be.join_request.domain.model.enums.RejectionReason;
+import com.ty.study_with_be.notification.application.command.strategy.NotificationContext;
 import com.ty.study_with_be.notification.application.command.strategy.recipient.RecipientType;
 import org.springframework.stereotype.Component;
 
@@ -21,20 +23,30 @@ public class EventRecipientPolicy {
         mapping.put(EventType.JOIN_REQUEST, RecipientType.LEADER_AND_MANAGER);
         mapping.put(EventType.JOIN_CANCEL, RecipientType.LEADER_AND_MANAGER);
         mapping.put(EventType.JOIN_APPROVE, RecipientType.LEADER_AND_MANAGER_AND_TARGET);
-        mapping.put(EventType.JOIN_REJECT, RecipientType.LEADER_AND_MANAGER_AND_TARGET);
 
         mapping.put(EventType.MEMBER_LEAVE, RecipientType.LEADER_AND_MANAGER);
         mapping.put(EventType.MEMBER_KICK, RecipientType.LEADER_AND_MANAGER_AND_TARGET);
         mapping.put(EventType.ROLE_CHANGE, RecipientType.LEADER_AND_MANAGER_AND_TARGET);
 
         mapping.put(EventType.NOTICE_CREATE, RecipientType.ALL_MEMBERS);
+        mapping.put(EventType.END_RECRUITMENT, RecipientType.ALL_MEMBERS);
+        mapping.put(EventType.RESUME_RECRUITMENT, RecipientType.ALL_MEMBERS);
+        mapping.put(EventType.END_OPERATION, RecipientType.ALL_MEMBERS);
     }
 
-    public RecipientType resolve(EventType eventType) {
-        RecipientType type = mapping.get(eventType);
-        if (type == null) {
-            throw new IllegalStateException("No RecipientType mapping for " + eventType);
+    public RecipientType resolve(NotificationContext context) {
+
+        EventType eventType = context.getEventType();
+
+        if (eventType == EventType.JOIN_REJECT) {
+
+            if (context.getRejectionReason() == RejectionReason.GROUP_CLOSED) {
+                return RecipientType.TARGET_ONLY;
+            }
+
+            return RecipientType.LEADER_AND_MANAGER_AND_TARGET;
         }
-        return type;
+
+        return mapping.get(eventType);
     }
 }

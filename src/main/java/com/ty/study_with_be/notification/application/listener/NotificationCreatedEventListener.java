@@ -1,4 +1,4 @@
-package com.ty.study_with_be.notification.application.command.listener;
+package com.ty.study_with_be.notification.application.listener;
 
 import com.ty.study_with_be.notification.application.command.handler.NotificationCreatedEvent;
 import com.ty.study_with_be.notification.domain.Notification;

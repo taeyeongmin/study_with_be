@@ -4,10 +4,9 @@ import com.ty.study_with_be.global.event.domain.DomainEvent;
 import com.ty.study_with_be.global.entity.BaseTimeEntity;
 import com.ty.study_with_be.global.error.ErrorCode;
 import com.ty.study_with_be.global.exception.DomainException;
-import com.ty.study_with_be.join_request.domain.event.JoinCancelEvent;
-import com.ty.study_with_be.join_request.domain.event.JoinProcessEvent;
-import com.ty.study_with_be.join_request.domain.event.JoinRequestEvent;
+import com.ty.study_with_be.join_request.domain.event.*;
 import com.ty.study_with_be.join_request.domain.model.enums.JoinRequestStatus;
+import com.ty.study_with_be.join_request.domain.model.enums.RejectionReason;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -96,7 +95,7 @@ public class JoinRequest extends BaseTimeEntity {
         this.processedByMemberId = processorId;
         this.processedAt = LocalDateTime.now();
 
-        this.raise(JoinProcessEvent.of(studyGroupId, requesterId, processorId, JoinRequestStatus.APPROVED));
+        this.raise(JoinApproveEvent.of(studyGroupId, requesterId, processorId));
     }
 
     public void reject(Long processorId) {
@@ -106,7 +105,15 @@ public class JoinRequest extends BaseTimeEntity {
         this.processedByMemberId = processorId;
         this.processedAt = LocalDateTime.now();
 
-        this.raise(JoinProcessEvent.of(studyGroupId, requesterId, processorId, JoinRequestStatus.REJECTED));
+        this.raise(JoinRejectEvent.of(studyGroupId, requesterId, processorId, RejectionReason.MANUAL));
+    }
+
+    public void rejectByEndOperation(Long processorMemberId) {
+
+        this.status = JoinRequestStatus.REJECTED;
+        this.processedAt = LocalDateTime.now();
+
+        this.raise(JoinRejectEvent.of(studyGroupId, requesterId, processorMemberId, RejectionReason.GROUP_CLOSED));
     }
 
     private void validPending() {

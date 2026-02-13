@@ -31,6 +31,7 @@ public enum ErrorCode {
     NOT_GROUP_OWNER(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.not_group_owner"),
     NOT_GROUP_MEMBER(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.not_group_member"),
     NOT_RECRUITING(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.not_recruiting"),
+    NOT_RECRUIT_END(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.not_recruit_end"),
     DEADLINE_EXCEEDED(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.deadline_exceeded"),
     NOT_ONLY_OWNER(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.not_only_owner"),
     CAPACITY_EXCEEDED(HttpStatus.UNPROCESSABLE_ENTITY, "error.study_group.capacity_exceeded"),

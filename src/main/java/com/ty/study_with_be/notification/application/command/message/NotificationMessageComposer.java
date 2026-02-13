@@ -18,7 +18,7 @@ public class NotificationMessageComposer {
     private final MemberQueryRepository memberQueryRepository;
 
     public String createMessage(NotificationContext context) {
-        NotificationMessageTemplate template = NotificationMessageTemplate.from(context.getEventType());
+        NotificationMessageTemplate template = NotificationMessageTemplate.from(context);
         ParamSource[] sources = template.getParamSources();
 
         Object[] params = new Object[sources.length];

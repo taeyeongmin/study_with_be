@@ -26,7 +26,7 @@ public class NotificationStrategyResolver {
 
         // 이벤트 타입으로 수신자 ENUM 객체 조회
         RecipientType recipientType =
-                eventRecipientPolicy.resolve(context.getEventType());
+                eventRecipientPolicy.resolve(context);
         
         RecipientStrategy recipientStrategy =
                 recipientRegistry.get(recipientType);

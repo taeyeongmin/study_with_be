@@ -40,7 +40,7 @@ public class OutboxWorker {
                 e.markProcessing();
                 // 같은 트랜잭션 안에서 Event 및 Notification 저장
                 OutboxPayload outboxPayload = objectMapper.readValue(e.getPayload(), OutboxPayload.class);
-                notificationEventHandler.precess(e.getEventType(), outboxPayload);
+                notificationEventHandler.precess(e.getEventType(), outboxPayload, outboxPayload.getRejectionReason());
                 e.markDone();
             } catch (Exception ex) {
                 log.error("[OUTBOX] fail id={}, type={}, retry={}", e.getId(), e.getEventType(), e.getRetryCount(), ex);
