@@ -1,4 +1,4 @@
-package com.ty.study_with_be.member.application.query.repository;
+package com.ty.study_with_be.member.application.query;
 
 import java.util.Optional;
 

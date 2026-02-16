@@ -70,6 +70,12 @@ public enum NotificationMessageTemplate {
             new ParamSource[]{ParamSource.PROCESSOR}),
 
     // 그룹원 모두: 모집 종료
+    END_OPERATION(EventType.END_OPERATION,
+            "[%s]님이 스터디 운영을 종료했어요.",
+            "/study-groups/%d/notices",
+            new ParamSource[]{ParamSource.PROCESSOR}),
+
+    // 그룹원 모두: 모집 종료
     RESUME_RECRUITMENT(EventType.RESUME_RECRUITMENT,
             "[%s]님이 모집을 재개했어요.",
             "/study-groups/%d/notices",

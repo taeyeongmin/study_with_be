@@ -147,6 +147,7 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
 
     @Override
     public Page<StudyGroupListItem> findStudyGroups(
+            String title,
             String category,
             String topic,
             String region,
@@ -162,6 +163,11 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
         // -----------------------------
         // 기본 필터
         // -----------------------------
+        if (StringUtils.hasText(title)) {
+            where.append(" and sg.title like :title ");
+            params.put("title", "%" + title.trim() + "%");
+        }
+
         if (StringUtils.hasText(category)) {
             where.append(" and sg.category = :category ");
             params.put("category", category);
@@ -217,7 +223,7 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
         // -----------------------------
         if (currentMemberId == null) {
 
-            // 비로그인 → ONGOING만
+            // 비로그인은 ONGOING만 조회 가능
             where.append("""
             and sg.operationStatus =
                 com.ty.study_with_be.study_group.domain.model.enums.OperationStatus.ONGOING
@@ -514,6 +520,7 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
                         then '모집중'
                     else '모집마감'
                 end,
+                sg.operationStatus,
                 sg.capacity,
                 sg.currentCount
         )
@@ -550,4 +557,78 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
         return new PageImpl<>(content, pageable, total);
     }
 
+    @Override
+    public Page<StudyGroupListItem> findPopularStudyGroups(Pageable pageable) {
+
+        StringBuilder where = new StringBuilder(" where 1=1 ");
+        Map<String, Object> params = new HashMap<>();
+
+        where.append("""
+            and sg.recruitStatus = com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus.RECRUITING
+            and (sg.applyDeadlineAt is null or sg.applyDeadlineAt >= current_date)
+            and sg.currentCount < sg.capacity
+            and sg.operationStatus = com.ty.study_with_be.study_group.domain.model.enums.OperationStatus.ONGOING
+        """);
+
+        String contentJpql = """
+            select new com.ty.study_with_be.study_group.presentation.query.dto.StudyGroupListItem(
+                sg.studyGroupId,
+                sg.title,
+                sg.category,
+                cat.codeNm,
+                sg.topic,
+                sg.recruitStatus,
+                '모집중',
+                sg.operationStatus,
+                sg.description,
+                sg.capacity,
+                sg.currentCount,
+                case
+                    when sg.applyDeadlineAt is null then null
+                    else cast(function('datediff', sg.applyDeadlineAt, current_date) as integer)
+                end,
+                false
+            )
+            from StudyGroup sg
+            left join CommonCode cat
+                on cat.code = sg.category
+               and cat.useYn = true
+               and cat.depth = 2
+        """ + where + """
+            order by
+                case
+                    when sg.applyDeadlineAt is not null
+                     and function('datediff', sg.applyDeadlineAt, current_date) between 0 and 3
+                    then 1
+                    else 0
+                end desc,
+                case
+                    when sg.capacity is null or sg.capacity = 0 then 0.0
+                    else (1.0 * sg.currentCount / sg.capacity)
+                end desc,
+                sg.createdAt desc
+        """;
+
+        TypedQuery<StudyGroupListItem> contentQuery =
+                em.createQuery(contentJpql, StudyGroupListItem.class);
+        params.forEach(contentQuery::setParameter);
+        contentQuery.setFirstResult((int) pageable.getOffset());
+        contentQuery.setMaxResults(pageable.getPageSize());
+
+        List<StudyGroupListItem> content = contentQuery.getResultList();
+
+        String countJpql = """
+            select count(sg.studyGroupId)
+            from StudyGroup sg
+        """ + where;
+
+        TypedQuery<Long> countQuery = em.createQuery(countJpql, Long.class);
+        params.forEach(countQuery::setParameter);
+
+        long total = countQuery.getSingleResult();
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
 }
+

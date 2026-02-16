@@ -9,6 +9,7 @@ import com.ty.study_with_be.study_group.domain.model.enums.StudyRole;
 import com.ty.study_with_be.study_group.presentation.query.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,8 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class StudyGroupQueryService {
+    private static final int POPULAR_DEFAULT_PAGE = 0;
+    private static final int POPULAR_DEFAULT_SIZE = 20;
 
     private final StudyGroupQueryRepository groupQueryRepository;
     private final JoinRequestQueryRepository joinRequestQueryRepository;
@@ -41,16 +44,12 @@ public class StudyGroupQueryService {
     }
 
     public StudyGroupListRes getStudyGroupList(
-            String category,
-            String topic,
-            String region,
-            StudyMode studyMode,
-            RecruitStatus recruitStatus,
+            StudyGroupListReq req,
             Pageable pageable,
             Long currentMemberId
     ) {
         Page<StudyGroupListItem> page = groupQueryRepository.findStudyGroups(
-                category, topic, region, studyMode, recruitStatus, pageable,currentMemberId
+                req.getTitle(),req.getCategory(), req.getTopic(), req.getRegion(), req.getStudyMode(), req.getRecruitStatus(), pageable,currentMemberId
         );
 
         return new StudyGroupListRes(
@@ -141,5 +140,21 @@ public class StudyGroupQueryService {
                 page.hasNext()
         );
 
+    }
+
+    public StudyGroupListRes getPopularStudy() {
+
+        Pageable pageable = PageRequest.of(POPULAR_DEFAULT_PAGE, POPULAR_DEFAULT_SIZE);
+
+        Page<StudyGroupListItem> page = groupQueryRepository.findPopularStudyGroups(pageable);
+
+        return new StudyGroupListRes(
+                page.getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.hasNext()
+        );
     }
 }

@@ -4,6 +4,7 @@ import com.ty.study_with_be.global.event.domain.EventType;
 import com.ty.study_with_be.global.outbox.application.NotificationEventHandler;
 import com.ty.study_with_be.global.outbox.application.dto.OutboxPayload;
 import com.ty.study_with_be.join_request.domain.model.enums.RejectionReason;
+import com.ty.study_with_be.notification.application.NotificationCreatedEvent;
 import com.ty.study_with_be.notification.application.command.resolver.NotificationStrategyResolver;
 import com.ty.study_with_be.notification.application.command.strategy.NotificationContext;
 import com.ty.study_with_be.notification.application.command.strategy.StrategyHolder;

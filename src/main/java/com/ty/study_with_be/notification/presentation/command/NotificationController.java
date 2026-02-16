@@ -69,7 +69,16 @@ public class NotificationController {
 
         return ResponseEntity.ok().build();
     }
-    
+
+    @PreAuthorize("isAuthenticated()")
+    @Operation(
+            summary = "알림 SSE 연결",
+            description = """
+                    ## 기능 설명
+                    - 화면에서 서버의 알림 요청을 받기 위한 연결을 생성.
+                    - 회원 PK를 통해 고유 SSE연결을 생성한다.
+                    """
+    )
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter stream(@AuthenticationPrincipal User userPrincipal) {
 

@@ -17,7 +17,7 @@ public interface StudyGroupQueryRepository {
 
     Optional<StudyGroupDetailRes> findDetail(Long studyGroupId, Long currentMemberId);
 
-    Page<StudyGroupListItem> findStudyGroups(String category, String topic, String region, StudyMode studyMode, RecruitStatus recruitStatus, Pageable pageable,Long currentMemberId);
+    Page<StudyGroupListItem> findStudyGroups(String title, String category, String topic, String region, StudyMode studyMode, RecruitStatus recruitStatus, Pageable pageable,Long currentMemberId);
 
     Optional<StudyRole> findRole(Long groupId, Long memberId);
 
@@ -41,4 +41,7 @@ public interface StudyGroupQueryRepository {
             List<StudyRole> roleFilter,
             Pageable pageable
     );
+
+    Page<StudyGroupListItem> findPopularStudyGroups(Pageable pageable);
+
 }

@@ -70,14 +70,9 @@ public class SseEmitterRegistry {
 
     /**
      * 특정 사용자에게 SSE 이벤트를 전송.
-     * 외부에서는 emitter 목록을 직접 꺼내 쓰지 말고 반드시 이 메서드를 통해 전송.
-     *
-     * 이유:
-     * - 죽은 emitter를 send 중 예외로 감지하면 즉시 registry에서 제거해야 함
-     * - SseEmitter는 동시 send에 취약하므로 lock으로 직렬화해야 함
      *
      * @param memberId  수신자
-     * @param eventName SSE event name ("notification", "ping")
+     * @param eventName SSE event name
      * @param data      전송 payload
      */
     public void sendToMember(Long memberId, String eventName, Object data) {

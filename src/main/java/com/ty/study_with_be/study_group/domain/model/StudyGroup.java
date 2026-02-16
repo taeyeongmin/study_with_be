@@ -153,28 +153,6 @@ public class StudyGroup extends BaseTimeEntity {
         return group;
     }
 
-
-    public void joinMember(Long requesterId, Long currentMemberId) {
-
-        validJoinMember(currentMemberId);
-
-        StudyMember newMember = StudyMember.createMember(this, requesterId);
-
-        if (this.members.contains(newMember)) throw new DomainException(ErrorCode.ALREADY_JOINED_MEMBER);
-
-        this.members.add(newMember);
-        increaseMemberCount();
-    }
-
-    protected void validJoinMember(Long currentMemberId) {
-
-        StudyMember studyMember = findStudyMemberByMemberId(currentMemberId);
-
-        if (!studyMember.hasManageRole()) throw new DomainException(ErrorCode.HAS_NOT_PERMISSION);
-
-        this.validateRecruitable();
-    }
-
     public void updateInfo(String title, String category, String topic, String region, StudyMode studyMode, int capacity, String description, LocalDate applyDeadlineAt, Set<DayOfWeek> schedules, Long memberId) {
 
         if (!isLeader(memberId)) throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
@@ -193,7 +171,6 @@ public class StudyGroup extends BaseTimeEntity {
         this.schedules = schedules;
     }
 
-    // TODO: 테스트 필요
     public void updateOperationInfo(int capacity, StudyMode studyMode, SchedulingType schedulingType, Set<DayOfWeek> schedules, Long memberId) {
 
         if (!isLeader(memberId)) throw new DomainException(ErrorCode.NOT_GROUP_OWNER);
@@ -207,6 +184,80 @@ public class StudyGroup extends BaseTimeEntity {
         this.schedules = schedules;
     }
 
+
+    /** 스터디 멤버 추가 */
+    public void joinMember(Long requesterId, Long currentMemberId) {
+
+        validJoinMember(currentMemberId);
+
+        StudyMember newMember = StudyMember.createMember(this, requesterId);
+
+        if (this.members.contains(newMember)) throw new DomainException(ErrorCode.ALREADY_JOINED_MEMBER);
+
+        this.members.add(newMember);
+        increaseMemberCount();
+    }
+
+    /** 스터디 멤버 탈퇴 */
+    public void leave(Long memberId) {
+
+        // StudyMember 조회
+        StudyMember member = findStudyMemberByMemberId(memberId);
+        // 검증
+        validLeave(member);
+        // members에서 제거
+        removeMember(member);
+
+        this.raise(MemberLeaveEvent.of(studyGroupId, memberId));
+    }
+    
+    /** 스터디 방장 변경 및 탈퇴 */
+    public void transferLeaderAndLeave(Long targetStudyMemberId, Long currentMemberId) {
+        changeRole(targetStudyMemberId, currentMemberId, StudyRole.LEADER);
+        leaderLeave(currentMemberId);
+
+        this.raise(MemberLeaveEvent.of(studyGroupId, currentMemberId));
+    }
+
+    /** 스터디 멤버 강퇴 */
+    public void expelMember(Long targetMemberId, long currentMemberId) {
+
+        // 현재 멤버 및 강퇴 대상 조회
+        StudyMember currentMember = findStudyMemberByMemberId(currentMemberId);
+        StudyMember targetMember = findStudyMemberByStudyMemberId(targetMemberId);
+
+        // 정책 검증
+        validExpelMember(targetMember, currentMember);
+
+        removeMember(targetMember);
+
+        this.raise(MemberKickEvent.of(studyGroupId, targetMember.getMemberId(), currentMemberId));
+
+    }
+
+    /** 스터디 멤버 역할 변경 */
+    public void changeRole(Long targetStudyMemberId, Long currentMemberId, StudyRole role) {
+
+        // studyMember 조회
+        StudyMember targetMember = findStudyMemberByStudyMemberId(targetStudyMemberId);
+        StudyMember currentMember = findStudyMemberByMemberId(currentMemberId);
+
+        // 정책 검증
+        validChangeRole(targetMember, currentMember);
+
+        targetMember.changeRole(role);
+
+        this.raise(ChangeRoleEvent.of(studyGroupId, targetMember.getMemberId(), currentMemberId));
+    }
+
+    protected void validJoinMember(Long currentMemberId) {
+
+        StudyMember studyMember = findStudyMemberByMemberId(currentMemberId);
+
+        if (!studyMember.hasManageRole()) throw new DomainException(ErrorCode.HAS_NOT_PERMISSION);
+
+        this.validateRecruitable();
+    }
 
     public void validDelete(Long currentMemberId) {
 
@@ -272,55 +323,6 @@ public class StudyGroup extends BaseTimeEntity {
         return this.members.stream()
             .filter(member -> member.isSameMemberByMemberId(memberId))
             .findFirst().orElseThrow(() -> new DomainException(ErrorCode.NOT_GROUP_MEMBER));
-    }
-
-    public void leave(Long memberId) {
-
-        // StudyMember 조회
-        StudyMember member = findStudyMemberByMemberId(memberId);
-        // 검증
-        validLeave(member);
-        // members에서 제거
-        removeMember(member);
-
-        this.raise(MemberLeaveEvent.of(studyGroupId, memberId));
-    }
-
-
-    public void transferLeaderAndLeave(Long targetStudyMemberId, Long currentMemberId) {
-        changeRole(targetStudyMemberId, currentMemberId, StudyRole.LEADER);
-        leaderLeave(currentMemberId);
-
-        this.raise(MemberLeaveEvent.of(studyGroupId, currentMemberId));
-    }
-
-    public void expelMember(Long targetMemberId, long currentMemberId) {
-
-        // 현재 멤버 및 강퇴 대상 조회
-        StudyMember currentMember = findStudyMemberByMemberId(currentMemberId);
-        StudyMember targetMember = findStudyMemberByStudyMemberId(targetMemberId);
-
-        // 정책 검증
-        validExpelMember(targetMember, currentMember);
-
-        removeMember(targetMember);
-
-        this.raise(MemberKickEvent.of(studyGroupId, targetMember.getMemberId(), currentMemberId));
-
-    }
-
-    public void changeRole(Long targetStudyMemberId, Long currentMemberId, StudyRole role) {
-
-        // studyMember 조회
-        StudyMember targetMember = findStudyMemberByStudyMemberId(targetStudyMemberId);
-        StudyMember currentMember = findStudyMemberByMemberId(currentMemberId);
-
-        // 정책 검증
-        validChangeRole(targetMember, currentMember);
-
-        targetMember.changeRole(role);
-
-        this.raise(ChangeRoleEvent.of(studyGroupId, targetMember.getMemberId(), currentMemberId));
     }
 
     public boolean isLeader(Long memberId) {
@@ -434,6 +436,7 @@ public class StudyGroup extends BaseTimeEntity {
         if (this.recruitStatus == RecruitStatus.RECRUITING) throw new DomainException(ErrorCode.NOT_RECRUIT_END);
 
         this.operationStatus = OperationStatus.CLOSED;
+        this.closedAt = LocalDateTime.now();
 
         this.raise(OperationEndEvent.of(this.studyGroupId, currentMemberId));
     }
