@@ -23,7 +23,4 @@ public class MemberLeaveEvent extends DomainEvent {
         return new MemberLeaveEvent(studyGroupId, leaveMemberId);
     }
 
-    public String getEventId(){
-        return this.eventId;
-    }
 }

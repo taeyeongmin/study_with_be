@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class GetMyInfoService implements GetMyInfoUseCase {
+public class GetMyInfoService {
 
     private final MemberRepository memberRepository;
 

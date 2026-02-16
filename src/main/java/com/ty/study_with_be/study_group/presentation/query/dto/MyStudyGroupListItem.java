@@ -1,5 +1,6 @@
 package com.ty.study_with_be.study_group.presentation.query.dto;
 
+import com.ty.study_with_be.study_group.domain.model.enums.OperationStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
 import com.ty.study_with_be.study_group.domain.model.enums.StudyRole;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -36,6 +37,9 @@ public class MyStudyGroupListItem {
 
     @Schema(description = "모집 상태명", example = "모집중")
     private String recruitStatusNm;
+
+    @Schema(description = "운영 상태", example = "CLOSED")
+    private OperationStatus operationStatus;
 
     @Schema(description = "정원", example = "6")
     private Integer capacity;

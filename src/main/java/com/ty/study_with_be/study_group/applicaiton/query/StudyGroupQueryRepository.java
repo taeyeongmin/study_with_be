@@ -15,9 +15,9 @@ public interface StudyGroupQueryRepository {
 
     boolean existsMember(Long studyGroupId, Long memberId);
 
-    Optional<StudyGroupDetailRes> findDetail(Long studyGroupId);
+    Optional<StudyGroupDetailRes> findDetail(Long studyGroupId, Long currentMemberId);
 
-    Page<StudyGroupListItem> findStudyGroups(String category, String topic, String region, StudyMode studyMode, RecruitStatus recruitStatus, Pageable pageable);
+    Page<StudyGroupListItem> findStudyGroups(String title, String category, String topic, String region, StudyMode studyMode, RecruitStatus recruitStatus, Pageable pageable,Long currentMemberId);
 
     Optional<StudyRole> findRole(Long groupId, Long memberId);
 
@@ -35,5 +35,13 @@ public interface StudyGroupQueryRepository {
 
     int countByMemberIdOperate(Long memberId);
 
-    Page<MyStudyGroupListItem> findMyStudyGroups(Long memberId, List<MyStudyGroupOperationFilter> operationStatus, Pageable pageable);
+    Page<MyStudyGroupListItem> findMyStudyGroups(
+            Long memberId,
+            List<MyStudyGroupOperationFilter> operationStatus,
+            List<StudyRole> roleFilter,
+            Pageable pageable
+    );
+
+    Page<StudyGroupListItem> findPopularStudyGroups(Pageable pageable);
+
 }

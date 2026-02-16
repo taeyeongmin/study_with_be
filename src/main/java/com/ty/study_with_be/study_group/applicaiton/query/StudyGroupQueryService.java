@@ -9,6 +9,7 @@ import com.ty.study_with_be.study_group.domain.model.enums.StudyRole;
 import com.ty.study_with_be.study_group.presentation.query.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,17 +23,19 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class StudyGroupQueryService {
+    private static final int POPULAR_DEFAULT_PAGE = 0;
+    private static final int POPULAR_DEFAULT_SIZE = 20;
 
     private final StudyGroupQueryRepository groupQueryRepository;
     private final JoinRequestQueryRepository joinRequestQueryRepository;
     private final GroupRepository groupRepository;
 
-    public StudyGroupDetailRes getDetail(Long studyGroupId) {
+    public StudyGroupDetailRes getDetail(Long studyGroupId,Long currentMemberId) {
 
         StudyGroup studyGroup = groupRepository.findById(studyGroupId).orElseThrow(RuntimeException::new);
         Set<DayOfWeek> schedules = studyGroup.getSchedules();
 
-        StudyGroupDetailRes studyGroupDetailRes = groupQueryRepository.findDetail(studyGroupId)
+        StudyGroupDetailRes studyGroupDetailRes = groupQueryRepository.findDetail(studyGroupId,currentMemberId)
                 .orElseThrow(RuntimeException::new);
 
         studyGroupDetailRes.setSchedules(schedules);
@@ -41,15 +44,12 @@ public class StudyGroupQueryService {
     }
 
     public StudyGroupListRes getStudyGroupList(
-            String category,
-            String topic,
-            String region,
-            StudyMode studyMode,
-            RecruitStatus recruitStatus,
-            Pageable pageable
+            StudyGroupListReq req,
+            Pageable pageable,
+            Long currentMemberId
     ) {
         Page<StudyGroupListItem> page = groupQueryRepository.findStudyGroups(
-                category, topic, region, studyMode, recruitStatus, pageable
+                req.getTitle(),req.getCategory(), req.getTopic(), req.getRegion(), req.getStudyMode(), req.getRecruitStatus(), pageable,currentMemberId
         );
 
         return new StudyGroupListRes(
@@ -124,7 +124,12 @@ public class StudyGroupQueryService {
     ) {
 
         Page<MyStudyGroupListItem> page =
-                groupQueryRepository.findMyStudyGroups(memberId, request.getOperationFilter(), pageable);
+                groupQueryRepository.findMyStudyGroups(
+                        memberId,
+                        request.getOperationFilter(),
+                        request.getRoleFilter(),
+                        pageable
+                );
 
         return new MyStudyGroupListRes(
                 page.getContent(),
@@ -135,5 +140,21 @@ public class StudyGroupQueryService {
                 page.hasNext()
         );
 
+    }
+
+    public StudyGroupListRes getPopularStudy() {
+
+        Pageable pageable = PageRequest.of(POPULAR_DEFAULT_PAGE, POPULAR_DEFAULT_SIZE);
+
+        Page<StudyGroupListItem> page = groupQueryRepository.findPopularStudyGroups(pageable);
+
+        return new StudyGroupListRes(
+                page.getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.hasNext()
+        );
     }
 }

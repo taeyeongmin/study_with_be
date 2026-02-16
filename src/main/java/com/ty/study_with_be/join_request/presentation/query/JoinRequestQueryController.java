@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -68,7 +69,7 @@ public class JoinRequestQueryController {
     )
     public MyRequestListRes getMyRequestList(
             @AuthenticationPrincipal User principal,
-            @ModelAttribute MyRequestListReq request
+            @ParameterObject @ModelAttribute MyRequestListReq request
     ) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
 

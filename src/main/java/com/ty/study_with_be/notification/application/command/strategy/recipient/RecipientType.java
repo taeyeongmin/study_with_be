@@ -7,4 +7,5 @@ public enum RecipientType {
     LEADER_AND_MANAGER,
     LEADER_AND_MANAGER_AND_TARGET,
     ALL_MEMBERS,
+    TARGET_ONLY,
 }

@@ -5,9 +5,7 @@ import com.ty.study_with_be.global.event.domain.EventType;
 import com.ty.study_with_be.global.outbox.application.dto.OutboxPayload;
 import com.ty.study_with_be.global.outbox.domain.OutboxEvent;
 import com.ty.study_with_be.global.outbox.infra.repository.OutboxEventRepository;
-import com.ty.study_with_be.study_group.domain.event.ChangeRoleEvent;
-import com.ty.study_with_be.study_group.domain.event.MemberKickEvent;
-import com.ty.study_with_be.study_group.domain.event.MemberLeaveEvent;
+import com.ty.study_with_be.study_group.domain.event.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -87,6 +85,75 @@ public class StudyGroupOutboxListener {
 
         OutboxEvent outbox = OutboxEvent.pending(
                 EventType.MEMBER_LEAVE,
+                payloadJson
+        );
+
+        outboxEventRepository.save(outbox);
+    }
+
+    /**
+     * 스터디 모집 종료
+     */
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void onEndRecruitment(RecruitmentEndEvent event) throws Exception {
+
+        String payloadJson = objectMapper.writeValueAsString(
+                OutboxPayload.of(
+                        event.getStudyGroupId(),
+                        event.getProcessorMemberId(),
+                        null,
+                        null
+                )
+        );
+
+        OutboxEvent outbox = OutboxEvent.pending(
+                EventType.END_RECRUITMENT,
+                payloadJson
+        );
+
+        outboxEventRepository.save(outbox);
+    }
+    
+    /**
+     * 스터디 모집 재개
+     */
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void onResumeRecruitment(RecruitmentResumeEvent event) throws Exception {
+
+        String payloadJson = objectMapper.writeValueAsString(
+                OutboxPayload.of(
+                        event.getStudyGroupId(),
+                        event.getProcessorMemberId(),
+                        null,
+                        null
+                )
+        );
+
+        OutboxEvent outbox = OutboxEvent.pending(
+                EventType.RESUME_RECRUITMENT,
+                payloadJson
+        );
+
+        outboxEventRepository.save(outbox);
+    }
+
+    /**
+     * 스터디 운영 종료
+     */
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void onEndOperation(OperationEndEvent event) throws Exception {
+
+        String payloadJson = objectMapper.writeValueAsString(
+                OutboxPayload.of(
+                        event.getStudyGroupId(),
+                        event.getProcessorMemberId(),
+                        null,
+                        null
+                )
+        );
+
+        OutboxEvent outbox = OutboxEvent.pending(
+                EventType.END_OPERATION,
                 payloadJson
         );
 

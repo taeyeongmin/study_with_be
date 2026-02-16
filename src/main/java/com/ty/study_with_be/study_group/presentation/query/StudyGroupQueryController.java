@@ -28,7 +28,7 @@ public class StudyGroupQueryController {
     private final StudyGroupQueryService queryService;
 
     @PermitAll
-    @GetMapping
+    @GetMapping("/")
     @Operation(
             summary = "스터디 그룹 목록 조회",
             description = """
@@ -37,6 +37,7 @@ public class StudyGroupQueryController {
                     - 페이징 파라미터(page, size)를 지원.
                     ---
                     ## 파라미터 설명
+                    - title: 스터디명
                     - category: 카테고리 코드
                     - topic: 주제 검색어(부분 일치)
                     - region: 지역 코드
@@ -46,28 +47,16 @@ public class StudyGroupQueryController {
                     - size: 페이지 크기
                     """
     )
-    @Parameters({
-            @Parameter(name = "category", description = "카테고리 코드", in = ParameterIn.QUERY),
-            @Parameter(name = "topic", description = "주제 검색어(부분 일치)", in = ParameterIn.QUERY),
-            @Parameter(name = "region", description = "지역 코드", in = ParameterIn.QUERY),
-            @Parameter(name = "studyMode", description = "스터디 모드(ONLINE/OFFLINE)", in = ParameterIn.QUERY),
-            @Parameter(name = "recruitStatus", description = "모집 상태(RECRUITING/RECRUIT_END)", in = ParameterIn.QUERY),
-            @Parameter(name = "page", description = "페이지 번호(0부터)", in = ParameterIn.QUERY),
-            @Parameter(name = "size", description = "페이지 크기", in = ParameterIn.QUERY)
-    })
     public StudyGroupListRes getStudyGroups(
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) String topic,
-            @RequestParam(required = false) String region,
-            @RequestParam(required = false) StudyMode studyMode,
-            @RequestParam(required = false) RecruitStatus recruitStatus,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+            @AuthenticationPrincipal User user
+            , @ParameterObject @ModelAttribute StudyGroupListReq request
     ) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
+        long currentMemberId = 0L;
+        if (user != null) currentMemberId = Long.parseLong(user.getUsername());
 
         return queryService.getStudyGroupList(
-                category, topic, region, studyMode, recruitStatus, pageable
+                request, pageable,currentMemberId
         );
     }
 
@@ -82,9 +71,13 @@ public class StudyGroupQueryController {
     )
     @Parameter(name = "studyGroupId", description = "스터디 그룹 ID", in = ParameterIn.PATH)
     public StudyGroupDetailRes detailGroup(
-            @PathVariable Long studyGroupId
+            @PathVariable Long studyGroupId,
+            @AuthenticationPrincipal User user
     ){
-        StudyGroupDetailRes detail = queryService.getDetail(studyGroupId);
+        Long currentMemberId = null;
+        if (user != null) currentMemberId = Long.valueOf(user.getUsername());
+
+        StudyGroupDetailRes detail = queryService.getDetail(studyGroupId,currentMemberId);
 
         return detail;
     }
@@ -145,6 +138,26 @@ public class StudyGroupQueryController {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
 
         return queryService.getMyGroupList(Long.valueOf(principal.getUsername()), request, pageable);
+    }
+
+    @PermitAll
+    @GetMapping
+    @Operation(
+            summary = "인기 스터디 그룹 목록",
+            description = """
+                    ## 기능 설명
+                    - 인기 있는 스터디 그룹 목록을 조회한다.
+                    ---
+                    ## 파라미터 설명
+                    - 모집중 우선: recruitStatus === RECRUITING (필수)
+                    - 운영중 우선: operationStatus === ONGOING (필수)
+                    - 마감 임박 가중: dDay가 0~3일이면 가점
+                    - 인기 가중: currentCount / capacity 비율이 높을수록 가점
+                    """
+    )
+    public StudyGroupListRes getPopularStudy() {
+
+        return queryService.getPopularStudy();
     }
 
 }

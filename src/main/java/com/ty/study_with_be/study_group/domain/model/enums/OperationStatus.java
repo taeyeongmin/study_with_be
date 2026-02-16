@@ -4,8 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum OperationStatus {
-    PREPARING("준비중")
-    , ONGOING("진행중")
+    ONGOING("진행중")
     , CLOSED("종료");
 
     private final String codeNm;
