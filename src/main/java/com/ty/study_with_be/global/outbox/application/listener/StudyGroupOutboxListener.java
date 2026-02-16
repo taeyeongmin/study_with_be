@@ -1,0 +1,164 @@
+package com.ty.study_with_be.global.outbox.application.listener;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ty.study_with_be.global.event.domain.EventType;
+import com.ty.study_with_be.global.outbox.application.dto.OutboxPayload;
+import com.ty.study_with_be.global.outbox.domain.OutboxEvent;
+import com.ty.study_with_be.global.outbox.infra.repository.OutboxEventRepository;
+import com.ty.study_with_be.study_group.domain.event.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
+
+/**
+ * 그룹,그룹원 관리와 관련된 이벤트를 수신하여 처리하는 객체
+ * - 모두 도메인 로직과 하나의 트랜잭션으로 묶어 처리한다.
+ */
+@Component
+@RequiredArgsConstructor
+public class StudyGroupOutboxListener {
+
+    private final OutboxEventRepository outboxEventRepository;
+    private final ObjectMapper objectMapper;
+
+    /**
+     * 스터디 그룹 멤버 role 변경
+     */
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void onChangeRole(ChangeRoleEvent event) throws Exception {
+
+        String payloadJson = objectMapper.writeValueAsString(
+            OutboxPayload.of(
+                event.getStudyGroupId(),
+                event.getProcessorMemberId(),
+                event.getTargetMemberId(),
+                null
+            )
+        );
+
+        OutboxEvent outbox = OutboxEvent.pending(
+                EventType.ROLE_CHANGE,
+                payloadJson
+        );
+
+        outboxEventRepository.save(outbox);
+    }
+    
+    /**
+     * 스터디 그룹 강퇴 시
+     */
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void onKickMember(MemberKickEvent event) throws Exception {
+
+        String payloadJson = objectMapper.writeValueAsString(
+            OutboxPayload.of(
+                event.getStudyGroupId(),
+                event.getProcessorMemberId(),
+                event.getTargetMemberId(),
+                null
+            )
+        );
+
+        OutboxEvent outbox = OutboxEvent.pending(
+                EventType.MEMBER_KICK,
+                payloadJson
+        );
+
+        outboxEventRepository.save(outbox);
+    }
+
+    /**
+     * 스터디 그룹 탈퇴 시
+     */
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void onLeaveMember(MemberLeaveEvent event) throws Exception {
+
+        String payloadJson = objectMapper.writeValueAsString(
+            OutboxPayload.of(
+                event.getStudyGroupId(),
+                event.getLeaveMemberId(),
+                event.getLeaveMemberId(),
+                null
+            )
+        );
+
+        OutboxEvent outbox = OutboxEvent.pending(
+                EventType.MEMBER_LEAVE,
+                payloadJson
+        );
+
+        outboxEventRepository.save(outbox);
+    }
+
+    /**
+     * 스터디 모집 종료
+     */
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void onEndRecruitment(RecruitmentEndEvent event) throws Exception {
+
+        String payloadJson = objectMapper.writeValueAsString(
+                OutboxPayload.of(
+                        event.getStudyGroupId(),
+                        event.getProcessorMemberId(),
+                        null,
+                        null
+                )
+        );
+
+        OutboxEvent outbox = OutboxEvent.pending(
+                EventType.END_RECRUITMENT,
+                payloadJson
+        );
+
+        outboxEventRepository.save(outbox);
+    }
+    
+    /**
+     * 스터디 모집 재개
+     */
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void onResumeRecruitment(RecruitmentResumeEvent event) throws Exception {
+
+        String payloadJson = objectMapper.writeValueAsString(
+                OutboxPayload.of(
+                        event.getStudyGroupId(),
+                        event.getProcessorMemberId(),
+                        null,
+                        null
+                )
+        );
+
+        OutboxEvent outbox = OutboxEvent.pending(
+                EventType.RESUME_RECRUITMENT,
+                payloadJson
+        );
+
+        outboxEventRepository.save(outbox);
+    }
+
+    /**
+     * 스터디 운영 종료
+     */
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void onEndOperation(OperationEndEvent event) throws Exception {
+
+        String payloadJson = objectMapper.writeValueAsString(
+                OutboxPayload.of(
+                        event.getStudyGroupId(),
+                        event.getProcessorMemberId(),
+                        null,
+                        null
+                )
+        );
+
+        OutboxEvent outbox = OutboxEvent.pending(
+                EventType.END_OPERATION,
+                payloadJson
+        );
+
+        outboxEventRepository.save(outbox);
+    }
+
+
+}
