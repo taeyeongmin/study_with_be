@@ -18,6 +18,11 @@
 - **방장**: 스터디 생성, 수정, 삭제, 매니저 지정
 - **매니저**: 가입 승인/거부, 공지 관리
 
+## 인증 방식
+
+- JWT 기반 인증(bearer token)
+- Access Token 사용
+- OAuth2 (Kakao) 로그인 지원
 ---
 
 ## 2. 기술 스택
@@ -54,12 +59,22 @@
 - 쓰기와 읽기 패키지 분리(command/query)  
 ---
 
+
 ## 4. ERD
 <img width="1247" height="661" alt="erd" src="https://github.com/user-attachments/assets/aed52267-89b7-41cc-a41b-b10c4fa6b414" />
 
 ---
 
-## 5. API 목록
+## 5. Deployment
+
+- Ubuntu (NCP)
+- Nginx Reverse Proxy
+- HTTPS 적용
+- systemd 서비스 등록
+  
+---
+
+## 6. API 목록
 ### [Swagger 이동 하기](http://localhost:8080/swagger-ui/index.html#/)
 
 
