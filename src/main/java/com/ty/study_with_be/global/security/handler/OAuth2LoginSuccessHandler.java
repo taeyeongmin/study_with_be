@@ -9,6 +9,7 @@ import com.ty.study_with_be.member.domain.model.Member;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -24,6 +25,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
@@ -51,11 +53,14 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         }
         String providerUserId = String.valueOf(kakaoId);
 
+        log.debug(">>>>>>>>  providerUserId: {}", providerUserId);
+
         // 기존 소셜 회원 여부 검증 후 없으면 oAuth 인증 정보만 담아서 리다이렉트
         if (!getMyInfoService.existsSocialMember(AuthType.KAKAO, providerUserId)) {
 
             String url = REDIRECT_URL + "?authType=" + AuthType.KAKAO+"&providerUserId="+providerUserId;
             response.sendRedirect(url);
+            log.debug(">>>>>>>> redirectUrl : {}",url);
             return;
         }
 
