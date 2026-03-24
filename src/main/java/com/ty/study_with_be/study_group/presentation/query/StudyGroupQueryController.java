@@ -1,12 +1,9 @@
 package com.ty.study_with_be.study_group.presentation.query;
 
 import com.ty.study_with_be.study_group.applicaiton.query.StudyGroupQueryService;
-import com.ty.study_with_be.study_group.domain.model.enums.RecruitStatus;
-import com.ty.study_with_be.study_group.domain.model.enums.StudyMode;
 import com.ty.study_with_be.study_group.presentation.query.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.security.PermitAll;
@@ -28,7 +25,7 @@ public class StudyGroupQueryController {
     private final StudyGroupQueryService queryService;
 
     @PermitAll
-    @GetMapping("/")
+    @GetMapping
     @Operation(
             summary = "스터디 그룹 목록 조회",
             description = """
@@ -140,8 +137,9 @@ public class StudyGroupQueryController {
         return queryService.getMyGroupList(Long.valueOf(principal.getUsername()), request, pageable);
     }
 
+
     @PermitAll
-    @GetMapping
+    @GetMapping("/popular/list")
     @Operation(
             summary = "인기 스터디 그룹 목록",
             description = """
@@ -159,5 +157,4 @@ public class StudyGroupQueryController {
 
         return queryService.getPopularStudy();
     }
-
 }

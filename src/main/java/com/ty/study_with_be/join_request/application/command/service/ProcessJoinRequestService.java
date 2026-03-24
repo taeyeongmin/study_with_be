@@ -34,15 +34,15 @@ public class ProcessJoinRequestService implements ProcessJoinRequestUseCase {
         if (status != JoinRequestStatus.APPROVED && status != JoinRequestStatus.REJECTED)
             throw new DomainException(ErrorCode.INVALID_REQUEST_PRECESS_STATUS);
 
+        // groupEntity 조회 (row-level lock)
+        StudyGroup studyGroup = getStudyGroup(studyGroupId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 그룹이 존재하지 않습니다."));
+
         // joinRequestEntity 조회
         JoinRequest joinRequest = joinRequestRepository.findById(requestId).orElseThrow(() -> new EntityNotFoundException("해당 요청이 존재하지 않습니다."));
 
         // URL 조작 방어
         if (!joinRequest.getStudyGroupId().equals(studyGroupId)) throw new RuntimeException("요청 확인 바람");
-
-        // groupEntity 조회 (row-level lock)
-        StudyGroup studyGroup = getStudyGroup(studyGroupId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 그룹이 존재하지 않습니다."));
 
         if (status == JoinRequestStatus.APPROVED) {
             studyGroup.joinMember(joinRequest.getRequesterId(), processorId);

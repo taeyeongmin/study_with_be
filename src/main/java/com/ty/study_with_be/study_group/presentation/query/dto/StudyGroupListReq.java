@@ -26,14 +26,14 @@ public class StudyGroupListReq {
             description = "스터디 진행 방식 (ONLINE/OFFLINE)",
             example = "ONLINE"
     )
-    private StudyMode studyMode = StudyMode.ONLINE;
+    private StudyMode studyMode;
 
     @Schema(
             description = "모집 상태(RECRUITING/RECRUIT_END)",
             example = "RECRUITING",
             defaultValue = "RECRUITING"
     )
-    private RecruitStatus recruitStatus = RecruitStatus.RECRUITING;
+    private RecruitStatus recruitStatus;
 
     @Schema(
             description = "페이지 번호 (0부터 시작)",
