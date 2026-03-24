@@ -21,7 +21,6 @@ import java.util.List;
 @Table(
     name = "join_request",
     indexes = {
-        @Index(name = "idx_join_req_study_status", columnList = "study_group_id, status"),
         @Index(name = "idx_join_req_member", columnList = "requester_id")
     }
 )
